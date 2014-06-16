@@ -1,14 +1,28 @@
 """ Utility functions for package."""
 from abc import ABCMeta, abstractmethod
-import datetime
-import decimal
+from datetime import datetime, timedelta, tzinfo
 import json
 
 from . import six
 
 
-class JSONSerializable(six.with_metaclass(ABCMeta, object)):
+class FixedOffset(tzinfo):
+    """Fixed offset in minutes east from UTC."""
 
+    def __init__(self, offset):
+        self.__offset = timedelta(seconds=offset)
+
+    def utcoffset(self, dt):
+        return self.__offset
+
+    def tzname(self, dt):
+        return 'TZ offset: {secs} hours'.format(secs=self.__offset)
+
+    def dst(self, dt):
+        return timedelta(0)
+
+
+class JSONSerializable(six.with_metaclass(ABCMeta, object)):
     """ Common functionality for json serializable objects."""
 
     serialize = staticmethod(json.dumps)
@@ -28,25 +42,44 @@ class JSONSerializable(six.with_metaclass(ABCMeta, object)):
         return cls(**data)
 
 
-class DatetimeDecimalEncoder(json.JSONEncoder):
-
-    """ Encoder for datetime and decimal serialization.
-
-    Usage: json.dumps(object, cls=DatetimeDecimalEncoder)
-    NOTE: _iterencode does not work
-
+class DatetimeEncoder(json.JSONEncoder):
+    """ Encoder for datetime objects.
+    Usage: json.dumps(object, cls=DatetimeEncoder)
     """
 
-    def default(self, o):
+    @staticmethod
+    def datetime_to_dict(dt):
+        dt_dct = {"__datetime__": [
+            dt.year,
+            dt.month,
+            dt.day,
+            dt.hour,
+            dt.minute,
+            dt.second,
+            dt.microsecond
+        ]}
+        if dt.tzinfo is not None:
+            dt_dct["__tzshift__"] = dt.utcoffset().seconds
+        return dt_dct
+
+    def encode(self, o):
         """ Encode JSON.
-
         :return str: A JSON encoded string
-
         """
-        if isinstance(o, decimal.Decimal):
-            return float(o)
 
-        if isinstance(o, (datetime.datetime, datetime.date)):
-            return o.isoformat()
+        if isinstance(o, datetime):
+            return super(DatetimeEncoder, self).encode(self.datetime_to_dict(o))
 
-        return json.JSONEncoder.default(self, o)
+        return super(DatetimeEncoder, self).default(o)
+
+
+def json_datetime_hook(dictionary):
+    if not "__datetime__" in dictionary:
+        return dictionary
+
+    dt = datetime(*dictionary["__datetime__"])
+
+    if "__tzshift__" in dictionary:
+        dt = dt.replace(tzinfo=FixedOffset(dictionary["__tzshift__"]))
+
+    return dt

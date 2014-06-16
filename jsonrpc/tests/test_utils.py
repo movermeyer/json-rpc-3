@@ -1,6 +1,5 @@
 """ Test utility functionality."""
-import datetime
-import decimal
+from datetime import datetime
 import json
 import sys
 if sys.version_info < (2, 7):
@@ -8,9 +7,8 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-from mock import patch
-
-from ..utils import JSONSerializable, DatetimeDecimalEncoder
+from ..utils import JSONSerializable, DatetimeEncoder, \
+    json_datetime_hook, FixedOffset
 
 
 class TestJSONSerializable(unittest.TestCase):
@@ -44,45 +42,28 @@ class TestJSONSerializable(unittest.TestCase):
             self._class.from_json('[]')
 
 
-class TestDatetimeDecimalEncoder(unittest.TestCase):
+class TestDatetimeEncoderDecoder(unittest.TestCase):
 
-    """ Test DatetimeDecimalEncoder functionality."""
+    """ Test DatetimeEncoder and json_datetime_hook functionality."""
 
-    def test_date_encoder(self):
-        obj = datetime.date.today()
-
-        with self.assertRaises(TypeError):
-            json.dumps(obj)
-
-        self.assertEqual(
-            json.dumps(obj, cls=DatetimeDecimalEncoder),
-            '"{0}"'.format(obj.isoformat()),
-        )
-
-    def test_datetime_encoder(self):
-        obj = datetime.datetime.now()
+    def test_datetime(self):
+        obj = datetime.now()
 
         with self.assertRaises(TypeError):
             json.dumps(obj)
 
-        self.assertEqual(
-            json.dumps(obj, cls=DatetimeDecimalEncoder),
-            '"{0}"'.format(obj.isoformat()),
-        )
+        string = json.dumps(obj, cls=DatetimeEncoder)
 
-    def test_decimal_encoder(self):
-        obj = decimal.Decimal('0.1')
+        self.assertEqual(obj,
+                         json.loads(string, object_hook=json_datetime_hook))
+
+    def test_datetime_tzinfo(self):
+        obj = datetime.now().replace(tzinfo=FixedOffset(3600))
 
         with self.assertRaises(TypeError):
             json.dumps(obj)
 
-        result = json.dumps(obj, cls=DatetimeDecimalEncoder)
-        self.assertTrue(isinstance(result, str))
-        self.assertEqual(float(result), float(0.1))
+        string = json.dumps(obj, cls=DatetimeEncoder)
 
-    def test_default(self):
-        encoder = DatetimeDecimalEncoder()
-        with patch.object(json.JSONEncoder, 'default') as json_default:
-            encoder.default("")
-
-        self.assertEqual(json_default.call_count, 1)
+        self.assertEqual(obj,
+                         json.loads(string, object_hook=json_datetime_hook))
