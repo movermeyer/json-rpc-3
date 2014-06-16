@@ -19,7 +19,7 @@ from .jsonrpc import JSONRPCRequest
 logger = logging.getLogger(__name__)
 
 
-class JSONRPCResponseManager(object):
+class JSONRPCResponseManager:
 
     """ JSON-RPC response manager.
 
@@ -39,13 +39,17 @@ class JSONRPCResponseManager(object):
         "2.0": JSONRPC20Response,
     }
 
-    @classmethod
-    def handle(cls, request_str, dispatcher):
+    json_object_hook = None
+
+    def __init__(self, json_object_hook=None):
+        self.json_object_hook = json_object_hook
+
+    def handle(self, request_str, dispatcher):
         if isinstance(request_str, bytes):
             request_str = request_str.decode("utf-8")
 
         try:
-            json.loads(request_str)
+            json.loads(request_str, object_hook=self.json_object_hook)
         except (TypeError, ValueError):
             return JSONRPC20Response(error=JSONRPCParseError()._data)
 
@@ -56,7 +60,7 @@ class JSONRPCResponseManager(object):
 
         rs = request if isinstance(request, JSONRPC20BatchRequest) \
             else [request]
-        responses = [r for r in cls._get_responses(rs, dispatcher)
+        responses = [r for r in self._get_responses(rs, dispatcher)
                      if r is not None]
 
         # notifications

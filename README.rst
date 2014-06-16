@@ -71,8 +71,9 @@ Server (uses `Werkzeug <http://werkzeug.pocoo.org/>`_)
         dispatcher["echo"] = lambda s: s
         dispatcher["add"] = lambda a, b: a + b
 
-        response = JSONRPCResponseManager.handle(
-            request.data, dispatcher)
+        manager = JSONRPCResponseManager()
+        response = manager.handle(
+            request.get_data(cache=False, as_text=True), dispatcher)
         return Response(response.json, mimetype='application/json')
 
 
