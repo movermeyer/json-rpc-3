@@ -1,81 +1,61 @@
-import requests
 import json
+
+import requests
+
+
+url = "http://localhost:4000/jsonrpc"
+headers = {'content-type': 'application/json'}
+
+
+def print_result(payload):
+    response = requests.post(
+        url,
+        data=json.dumps(payload),
+        headers=headers
+    ).json()
+
+    print(
+        r"""
+        {0}
+        {1}
+        """.format(payload, response))
 
 
 def main():
-    url = "http://localhost:4000/jsonrpc"
-    headers = {'content-type': 'application/json'}
-
-    # Example echo method
-    payload = {
-        "method": "echo",
-        "params": ["echome!"],
-        "jsonrpc": "2.0",
-        "id": 0,
-    }
-    response = requests.post(
-        url, data=json.dumps(payload), headers=headers).json()
-
-    assert response["result"] == "echome!"
-    assert response["jsonrpc"] == "2.0"
-    assert response["id"] == 0
-
-    # Example echo method JSON-RPC 1.0
-    payload = {
-        "method": "echo",
-        "params": ["echome!"],
-        "id": 0,
-    }
-    response = requests.post(
-        url, data=json.dumps(payload), headers=headers).json()
-
-    assert response["result"] == "echome!"
-    assert response["error"] is None
-    assert response["id"] == 0
-    assert "jsonrpc" not in response
-
-    # Example add method
-    payload = {
-        "method": "add",
-        "params": [1, 2],
-        "jsonrpc": "2.0",
-        "id": 1,
-    }
-    response = requests.post(
-        url, data=json.dumps(payload), headers=headers).json()
-
-    assert response["result"] == 3
-    assert response["jsonrpc"] == "2.0"
-    assert response["id"] == 1
-
-    # Example foobar method
-    payload = {
-        "method": "foobar",
-        "params": {"foo": "json", "bar": "-rpc"},
-        "jsonrpc": "2.0",
-        "id": 3,
-    }
-    response = requests.post(
-        url, data=json.dumps(payload), headers=headers).json()
-
-    assert response["result"] == "json-rpc"
-    assert response["jsonrpc"] == "2.0"
-    assert response["id"] == 3
-
-    # Example exception
-    payload = {
-        "method": "add",
-        "params": [0],
-        "jsonrpc": "2.0",
-        "id": 4,
-    }
-    response = requests.post(
-        url, data=json.dumps(payload), headers=headers).json()
-
-    assert response["error"]["message"] == "Invalid params"
-    assert response["error"]["code"] == -32602
-    assert response["jsonrpc"] == "2.0"
-    assert response["id"] == 4
+    payloads = [
+        {
+            "method": "simple_add",
+            "params": {"first": 17, "second": 39},
+            "jsonrpc": "2.0",
+            "id": 0,
+        },
+        {
+            "method": "echo",
+            "params": ["Hello!"],
+            "jsonrpc": "2.0",
+            "id": 1
+        },
+        {
+            "method": "time_ping",
+            "jsonrpc": "2.0",
+            "id": 2
+        },
+        {
+            "method": "dict_to_list",
+            "jsonrpc": "2.0",
+            "params": [{1: 3, 'two': 'string', 3: [5, 'list', {'c': 0.3}]}],
+            "id": 3
+        },
+        # Exception!
+        {
+            "method": "subtract",
+            "jsonrpc": "2.0",
+            "params": [1, 2, 3],
+            "id": 2
+        }
+    ]
+    for payload in payloads:
+        print_result(payload)
 
 
 if __name__ == "__main__":
