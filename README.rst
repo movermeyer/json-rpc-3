@@ -1,12 +1,12 @@
-json-rpc
-========
+json-rpc-3
+==========
 
-.. image:: https://travis-ci.org/pavlov99/json-rpc.png
-    :target: https://travis-ci.org/pavlov99/json-rpc
+.. image:: https://travis-ci.org/Orhideous/json-rpc.png
+    :target: https://travis-ci.org/Orhideous/json-rpc
     :alt: Build Status
 
-.. image:: https://coveralls.io/repos/pavlov99/json-rpc/badge.png
-    :target: https://coveralls.io/r/pavlov99/json-rpc
+.. image:: https://coveralls.io/repos/Orhideous/json-rpc/badge.png
+    :target: https://coveralls.io/r/Orhideous/json-rpc
     :alt: Coverage Status
 
 .. image:: https://pypip.in/v/json-rpc/badge.png
@@ -27,12 +27,13 @@ json-rpc
     :alt: License
 
 
-`JSON-RPC2.0 <http://www.jsonrpc.org/specification>`_ and `JSON-RPC1.0 <http://json-rpc.org/wiki/specification>`_ transport specification implementation. Supports python2.6+, python3.2+.
+`JSON-RPC2.0 <http://www.jsonrpc.org/specification>`_ transport specification implementation. Supports python3.2+.
+Fork of
 
 Documentation: http://json-rpc.readthedocs.org
 
 This implementation does not have any transport functionality realization, only protocol.
-Any client or server realization is easy based on current code, but requires transport libraries, such as requests, gevent or zmq, see `examples <https://github.com/pavlov99/json-rpc/tree/master/examples>`_.
+Any client or server realization is easy based on current code, but requires transport libraries, such as requests, gevent or zmq, see `examples <https://github.com/Orhideous/json-rpc/tree/master/examples>`_.
 
 Install
 -------

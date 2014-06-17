@@ -11,14 +11,15 @@ def read(fname):
         return ""
 
 setup(
-    name="json-rpc",
+    name="json-rpc-3",
     version=version,
     packages=find_packages(),
     test_suite="nose.collector",
     tests_require=["nose", "mock"],
-    author="Kirill Pavlov",
-    author_email="kirill.pavlov@phystech.edu",
-    url="https://github.com/pavlov99/json-rpc",
+    author='see AUTHORS',
+    maintainer='Orhideous',
+    maintainer_email='orhideous@gmail.com',
+    url="https://github.com/Orhideous/json-rpc",
     description="JSON-RPC transport realisation",
     long_description=read('README.rst'),
     classifiers=[
