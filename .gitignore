@@ -1,12 +1,10 @@
 *.egg
 *.egg-info
 *.py[c|o]
-.DS_Store
 .coverage
 .env
 .env3
 .ropeproject
-.tox
 build/
 dist/
 docs/_build/
