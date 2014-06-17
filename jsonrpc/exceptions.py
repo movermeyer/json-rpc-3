@@ -1,5 +1,4 @@
 import json
-import jsonrpc
 
 
 class JSONRPCException(Exception):
@@ -42,6 +41,7 @@ class JSONRPCError:
 
     serialize = staticmethod(json.dumps)
     deserialize = staticmethod(json.loads)
+
 
     def __init__(self, code=None, message=None, data=None):
         self._data = {}
@@ -89,6 +89,7 @@ class JSONRPCError:
         return self.serialize(self._data)
 
     def as_response(self, _id=None):
+        import jsonrpc
         return jsonrpc.JSONRPCResponse(error=self._data, _id=_id)
 
 

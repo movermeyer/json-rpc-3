@@ -6,7 +6,7 @@ from_json methods could decide what format is it by presence of 'jsonrpc' attrib
 
 import json
 
-from .exceptions import JSONRPCError, JSONRPCInvalidRequestException
+from .exceptions import JSONRPCInvalidRequestException, JSONRPCError
 from .base import JSONRPCBaseRequest, JSONRPCBaseResponse
 
 
