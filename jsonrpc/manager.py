@@ -1,5 +1,6 @@
 import json
 import logging
+
 from .exceptions import (
     JSONRPCInvalidParams,
     JSONRPCInvalidRequest,
@@ -8,7 +9,6 @@ from .exceptions import (
     JSONRPCParseError,
     JSONRPCServerError,
 )
-from .jsonrpc1 import JSONRPC10Response
 from .jsonrpc2 import (
     JSONRPC20BatchRequest,
     JSONRPC20BatchResponse,
@@ -16,26 +16,14 @@ from .jsonrpc2 import (
 )
 from .jsonrpc import JSONRPCRequest
 
+
 logger = logging.getLogger(__name__)
 
 
 class JSONRPCResponseManager:
-
-    """ JSON-RPC response manager.
-
-    Method brings syntactic sugar into library. Given dispatcher it handles
-    request (both single and batch) and handles errors.
-    Request could be handled in parallel, it is server responsibility.
-
-    :param str request_str: json string. Will be converted into
-        JSONRPC20Request, JSONRPC20BatchRequest or JSONRPC10Request
-
-    :param dict dispather: dict<function_name:function>.
-
-    """
+    """ JSON-RPC response manager. """
 
     RESPONSE_CLASS_MAP = {
-        "1.0": JSONRPC10Response,
         "2.0": JSONRPC20Response,
     }
 
@@ -45,9 +33,17 @@ class JSONRPCResponseManager:
         self.json_object_hook = json_object_hook
 
     def handle(self, request_str, dispatcher):
-        if isinstance(request_str, bytes):
-            request_str = request_str.decode("utf-8")
+        """
+        Method brings syntactic sugar into library.
+        Given dispatcher it handles request (both single and batch) and handles errors.
+        Request could be handled in parallel, it is server responsibility.
 
+        :param request_str: JSON string.
+            Will be converted into JSONRPC20Request or JSONRPC20BatchRequest
+        :type request_str: str
+        :type dispatcher: Dispatcher
+        :rtype: JSONRPC20Response | JSONRPC20BatchResponse
+        """
         try:
             json.loads(request_str, object_hook=self.json_object_hook)
         except (TypeError, ValueError):
@@ -76,12 +72,13 @@ class JSONRPCResponseManager:
     def _get_responses(cls, requests, dispatcher):
         """ Response to each single JSON-RPC Request.
 
+        :type dispatcher: Dispatcher
+        :type requests: iterator(JSONRPC20Request)
         :return iterator(JSONRPC20Response):
 
         """
         for request in requests:
-            response = lambda **kwargs: cls.RESPONSE_CLASS_MAP[
-                request.JSONRPC_VERSION](_id=request._id, **kwargs)
+            response = lambda **kwargs: cls.RESPONSE_CLASS_MAP[request.JSONRPC_VERSION](_id=request._id, **kwargs)
 
             try:
                 method = dispatcher[request.method]
@@ -99,8 +96,7 @@ class JSONRPCResponseManager:
                         "message": str(e),
                     }
                     logger.exception("API Exception: {0}".format(data))
-                    output = response(
-                        error=JSONRPCServerError(data=data)._data)
+                    output = response(error=JSONRPCServerError(data=data)._data)
                 else:
                     output = response(result=result)
             finally:

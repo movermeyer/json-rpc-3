@@ -1,62 +1,58 @@
 from ..dispatcher import Dispatcher
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 
 class TestDispatcher(unittest.TestCase):
 
     """ Test Dispatcher functionality."""
 
+    def setUp(self):
+        self.d = Dispatcher()
+        
     def test_getter(self):
-        d = Dispatcher()
 
         with self.assertRaises(KeyError):
-            d["method"]
+            _ = self.d["method"]
 
-        d["add"] = lambda *args: sum(args)
-        self.assertEqual(d["add"](1, 1), 2)
+        self.d["add"] = lambda *args: sum(args)
+        self.assertEqual(self.d["add"](1, 1), 2)
+
+    def test_len(self):
+        self.d["add"] = lambda *args: sum(args)
+        self.assertEqual(len(self.d), 1)
 
     def test_in(self):
-        d = Dispatcher()
-        d["method"] = lambda: ""
-        self.assertIn("method", d)
+        self.d["method"] = lambda: ""
+        self.assertIn("method", self.d)
 
     def test_add_method(self):
-        d = Dispatcher()
 
-        @d.add_method
+        @self.d.add_method
         def add(x, y):
             return x + y
 
-        self.assertIn("add", d)
-        self.assertEqual(d["add"](1, 1), 2)
+        self.assertIn("add", self.d)
+        self.assertEqual(self.d["add"](1, 1), 2)
 
     def test_add_method_keep_function_definitions(self):
 
-        d = Dispatcher()
-
-        @d.add_method
+        @self.d.add_method
         def one(x):
             return x
 
         self.assertIsNotNone(one)
 
     def test_del_method(self):
-        d = Dispatcher()
-        d["method"] = lambda: ""
-        self.assertIn("method", d)
+        self.d["method"] = lambda: ""
+        self.assertIn("method", self.d)
 
-        del d["method"]
-        self.assertNotIn("method", d)
+        del self.d["method"]
+        self.assertNotIn("method", self.d)
 
     def test_to_dict(self):
-        d = Dispatcher()
         func = lambda: ""
-        d["method"] = func
-        self.assertEqual(dict(d), {"method": func})
+        self.d["method"] = func
+        self.assertEqual(dict(self.d), {"method": func})
 
     def test_init_from_object_instance(self):
 
@@ -90,5 +86,5 @@ class TestDispatcher(unittest.TestCase):
 
     def test_dispatcher_representation(self):
 
-        d = Dispatcher()
-        self.assertEqual('{}', repr(d))
+        self.assertEqual('{}', repr(self.d))
+

@@ -1,23 +1,17 @@
-from . import six
 import json
 
 
 class JSONRPCException(Exception):
-
     """ JSON-RPC Exception."""
-
     pass
 
 
 class JSONRPCInvalidRequestException(JSONRPCException):
-
     """ Request is not valid."""
-
     pass
 
 
 class JSONRPCError(object):
-
     """ Error for JSON-RPC communication.
 
     When a rpc call encounters an error, the Response Object MUST contain the
@@ -58,7 +52,7 @@ class JSONRPCError(object):
         return self._data["code"]
 
     def __set_code(self, value):
-        if not isinstance(value, six.integer_types):
+        if not isinstance(value, int):
             raise ValueError("Error code should be integer")
 
         self._data["code"] = value
@@ -69,7 +63,7 @@ class JSONRPCError(object):
         return self._data["message"]
 
     def __set_message(self, value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise ValueError("Error message should be string")
 
         self._data["message"] = value
@@ -97,7 +91,6 @@ class JSONRPCError(object):
 
 
 class JSONRPCParseError(JSONRPCError):
-
     """ Parse Error.
 
     Invalid JSON was received by the server.
@@ -110,7 +103,6 @@ class JSONRPCParseError(JSONRPCError):
 
 
 class JSONRPCInvalidRequest(JSONRPCError):
-
     """ Invalid Request.
 
     The JSON sent is not a valid Request object.
@@ -122,7 +114,6 @@ class JSONRPCInvalidRequest(JSONRPCError):
 
 
 class JSONRPCMethodNotFound(JSONRPCError):
-
     """ Method not found.
 
     The method does not exist / is not available.
@@ -134,7 +125,6 @@ class JSONRPCMethodNotFound(JSONRPCError):
 
 
 class JSONRPCInvalidParams(JSONRPCError):
-
     """ Invalid params.
 
     Invalid method parameter(s).
@@ -146,7 +136,6 @@ class JSONRPCInvalidParams(JSONRPCError):
 
 
 class JSONRPCInternalError(JSONRPCError):
-
     """ Internal error.
 
     Internal JSON-RPC error.
@@ -158,7 +147,6 @@ class JSONRPCInternalError(JSONRPCError):
 
 
 class JSONRPCServerError(JSONRPCError):
-
     """ Server error.
 
     Reserved for implementation-defined server-errors.

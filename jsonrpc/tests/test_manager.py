@@ -1,8 +1,4 @@
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 from mock import MagicMock
 
 from ..manager import JSONRPCResponseManager
@@ -12,7 +8,6 @@ from ..jsonrpc2 import (
     JSONRPC20Request,
     JSONRPC20Response,
 )
-from ..jsonrpc1 import JSONRPC10Request, JSONRPC10Response
 
 
 class TestJSONRPCResponseManager(unittest.TestCase):
@@ -40,11 +35,6 @@ class TestJSONRPCResponseManager(unittest.TestCase):
             JSONRPC20Request("add", [[]], _id=0))
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertTrue(isinstance(response, JSONRPC20BatchResponse))
-
-    def test_returned_type_response_rpc10(self):
-        request = JSONRPC10Request("add", [[]], _id=0)
-        response = self.manager.handle(request.json, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPC10Response))
 
     def test_parse_error(self):
         req = '{"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]'

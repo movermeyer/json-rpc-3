@@ -3,8 +3,6 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta, tzinfo
 import json
 
-from . import six
-
 
 class FixedOffset(tzinfo):
     """Fixed offset in minutes east from UTC."""
@@ -22,7 +20,7 @@ class FixedOffset(tzinfo):
         return timedelta(0)
 
 
-class JSONSerializable(six.with_metaclass(ABCMeta, object)):
+class JSONSerializable(metaclass=ABCMeta):
     """ Common functionality for json serializable objects."""
 
     serialize = staticmethod(json.dumps)
@@ -70,7 +68,7 @@ class DatetimeEncoder(json.JSONEncoder):
         if isinstance(o, datetime):
             return super(DatetimeEncoder, self).encode(self.datetime_to_dict(o))
 
-        return super(DatetimeEncoder, self).default(o)
+        return super(DatetimeEncoder, self).encode(o)
 
 
 def json_datetime_hook(dictionary):

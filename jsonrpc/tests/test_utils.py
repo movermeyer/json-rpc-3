@@ -1,11 +1,7 @@
 """ Test utility functionality."""
 from datetime import datetime
 import json
-import sys
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 from ..utils import JSONSerializable, DatetimeEncoder, \
     json_datetime_hook, FixedOffset
@@ -54,6 +50,12 @@ class TestDatetimeEncoderDecoder(unittest.TestCase):
 
         string = json.dumps(obj, cls=DatetimeEncoder)
 
+        self.assertEqual(obj,
+                         json.loads(string, object_hook=json_datetime_hook))
+
+    def test_skip_nondt_obj(self):
+        obj = {'__weird__': True}
+        string = json.dumps(obj, cls=DatetimeEncoder)
         self.assertEqual(obj,
                          json.loads(string, object_hook=json_datetime_hook))
 

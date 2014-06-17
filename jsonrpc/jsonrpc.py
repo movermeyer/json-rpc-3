@@ -7,7 +7,6 @@ attribute.
 
 """
 from .utils import JSONSerializable
-from .jsonrpc1 import JSONRPC10Request
 from .jsonrpc2 import JSONRPC20Request
 
 
@@ -17,8 +16,4 @@ class JSONRPCRequest(JSONSerializable):
 
     @classmethod
     def from_json(cls, json_str):
-        data = cls.deserialize(json_str)
-        if isinstance(data, dict) and "jsonrpc" not in data:
-            return JSONRPC10Request.from_json(json_str)
-        else:
-            return JSONRPC20Request.from_json(json_str)
+        return JSONRPC20Request.from_json(json_str)

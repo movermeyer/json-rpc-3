@@ -1,5 +1,4 @@
-﻿from . import six
-import json
+﻿import json
 
 from .exceptions import JSONRPCError, JSONRPCInvalidRequestException
 from .base import JSONRPCBaseRequest, JSONRPCBaseResponse
@@ -9,10 +8,11 @@ class JSONRPC20Request(JSONRPCBaseRequest):
 
     """ A rpc call is represented by sending a Request object to a Server.
 
-    :param str method: A String containing the name of the method to be
+    :param method: A String containing the name of the method to be
         invoked. Method names that begin with the word rpc followed by a
         period character (U+002E or ASCII 46) are reserved for rpc-internal
         methods and extensions and MUST NOT be used for anything else.
+    :type method: str
 
     :param params: A Structured value that holds the parameter values to be
         used during the invocation of the method. This member MAY be omitted.
@@ -24,10 +24,10 @@ class JSONRPC20Request(JSONRPCBaseRequest):
         [1] and Numbers SHOULD NOT contain fractional parts [2].
     :type _id: str or int or None
 
-    :param bool is_notification: Whether request is notification or not. If
+    :param is_notification: Whether request is notification or not. If
         value is True, _id is not included to request. It allows to create
         requests with id = null.
-
+    :type is_notification: bool
     The Server MUST reply with the same value in the Response object if
     included. This member is used to correlate the context between the two
     objects.
@@ -43,8 +43,8 @@ class JSONRPC20Request(JSONRPCBaseRequest):
     """
 
     JSONRPC_VERSION = "2.0"
-    REQUIRED_FIELDS = set(["jsonrpc", "method"])
-    POSSIBLE_FIELDS = set(["jsonrpc", "method", "params", "id"])
+    REQUIRED_FIELDS = {"jsonrpc", "method"}
+    POSSIBLE_FIELDS = {"jsonrpc", "method", "params", "id"}
 
     @property
     def data(self):
@@ -68,14 +68,14 @@ class JSONRPC20Request(JSONRPCBaseRequest):
 
     @method.setter
     def method(self, value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise ValueError("Method should be string")
 
         if value.startswith("rpc."):
             raise ValueError(
-                "Method names that begin with the word rpc followed by a " +
-                "period character (U+002E or ASCII 46) are reserved for " +
-                "rpc-internal methods and extensions and MUST NOT be used " +
+                "Method names that begin with the word rpc followed by a "
+                "period character (U+002E or ASCII 46) are reserved for "
+                "rpc-internal methods and extensions and MUST NOT be used "
                 "for anything else.")
 
         self._data["method"] = str(value)
@@ -100,8 +100,7 @@ class JSONRPC20Request(JSONRPCBaseRequest):
 
     @_id.setter
     def _id(self, value):
-        if value is not None and \
-           not isinstance(value, six.string_types + six.integer_types):
+        if value is not None and not isinstance(value, (str, int)):
             raise ValueError("id should be string or integer")
 
         self._data["id"] = value
@@ -139,7 +138,7 @@ class JSONRPC20Request(JSONRPCBaseRequest):
         return JSONRPC20BatchRequest(*result) if is_batch else result[0]
 
 
-class JSONRPC20BatchRequest(object):
+class JSONRPC20BatchRequest:
 
     """ Batch JSON-RPC 2.0 Request.
 
@@ -241,8 +240,7 @@ class JSONRPC20Response(JSONRPCBaseResponse):
 
     @_id.setter
     def _id(self, value):
-        if value is not None and \
-           not isinstance(value, six.string_types + six.integer_types):
+        if value is not None and not isinstance(value, (str, int)):
             raise ValueError("id should be string or integer")
 
         self._data["id"] = value
