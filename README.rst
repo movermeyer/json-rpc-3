@@ -1,11 +1,11 @@
 json-rpc-3
 ==========
 
-.. image:: https://travis-ci.org/Orhideous/json-rpc.png
+.. image:: https://travis-ci.org/Orhideous/json-rpc-3.png
     :target: https://travis-ci.org/Orhideous/json-rpc-3
     :alt: Build Status
 
-.. image:: https://coveralls.io/repos/Orhideous/json-rpc/badge.png
+.. image:: https://coveralls.io/repos/Orhideous/json-rpc-3/badge.png
     :target: https://coveralls.io/r/Orhideous/json-rpc-3
     :alt: Coverage Status
 
