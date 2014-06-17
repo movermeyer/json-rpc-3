@@ -21,7 +21,7 @@ class JSONRPCBaseRequest(JSONSerializable, metaclass=ABCMeta):
         :param _id: An identifier established by the Client that MUST contain a
             String, Number, or NULL value if included. If it is not included it is
             assumed to be a notification. The value SHOULD normally not be Null
-            [1] and Numbers SHOULD NOT contain fractional parts [2].
+            [#]_ and Numbers SHOULD NOT contain fractional parts [#]_.
         :type _id: str or int or None
 
         :param is_notification: Whether request is notification or not. If
@@ -32,14 +32,14 @@ class JSONRPCBaseRequest(JSONSerializable, metaclass=ABCMeta):
         included. This member is used to correlate the context between the two
         objects.
 
-        [1] The use of Null as a value for the id member in a Request object is
-        discouraged, because this specification uses a value of Null for Responses
-        with an unknown id. Also, because JSON-RPC 1.0 uses an id value of Null
-        for Notifications this could cause confusion in handling.
+        .. rubric:: Footnotes
 
-        [2] Fractional parts may be problematic, since many decimal fractions
-        cannot be represented exactly as binary fractions.
-
+        .. [#] The use of Null as a value for the id member in a Request object is
+            discouraged, because this specification uses a value of Null for Responses
+            with an unknown id. Also, because JSON-RPC 1.0 uses an id value of Null
+            for Notifications this could cause confusion in handling.
+        .. [#] Fractional parts may be problematic, since many decimal fractions
+            cannot be represented exactly as binary fractions.
         """
         self._data = {}
         self.method = method
