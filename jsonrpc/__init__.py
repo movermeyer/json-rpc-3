@@ -5,6 +5,7 @@ __project__ = PROJECT = __name__
 
 from .manager import JSONRPCResponseManager
 from .dispatcher import Dispatcher
+from .jsonrpc import JSONRPCResponse
 
 dispatcher = Dispatcher()
 

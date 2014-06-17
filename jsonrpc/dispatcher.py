@@ -2,21 +2,19 @@ import collections
 
 
 class Dispatcher(collections.MutableMapping):
-
-    """ Method dispatcher.
-
-    Dictionary like object which holds map method_name to method.
-
+    """
+    Method dispatcher.
+    Dictionary-like object which holds map method_name to method.
     """
 
     def __init__(self, prototype=None):
-        """ Build method dispatcher.
+        """
+        Build method dispatcher.
 
         :param prototype: Initial method mapping.
         :type prototype: None or object or dict
-
         """
-        self.method_map = dict()
+        self.method_map = {}
 
         if prototype is not None:
             self.build_method_map(prototype)
@@ -40,32 +38,34 @@ class Dispatcher(collections.MutableMapping):
         return repr(self.method_map)
 
     def add_method(self, f, name=None):
-        """ Add a method to the dispatcher.
-
-        :param callable f: Callable to be added.
-        :param name: Name to register
-        :type name: None or str
-
+        """
+        Add a method to the dispatcher.
         When used as a decorator keep callable object unmodified.
+
+        :param f: Callable to be added.
+        :param name: Name to register
+        :type f: callable
+        :type name: None or str
         """
         self.method_map[name or f.__name__] = f
         return f
 
     def build_method_map(self, prototype):
-        """ Add prototype methods to the dispatcher.
+        """
+        Add prototype methods to the dispatcher.
+
+        If given prototype is a dictionary then all callable objects will be added to dispatcher.
+        If given prototype is an object then all public methods will be used.
 
         :param prototype: Method mapping.
         :type prototype: None or object or dict
-
-        If given prototype is a dictionary then all callable objects
-        will be added to dispatcher.  If given prototype is an object
-        then all public methods will be used.
-
         """
         if not isinstance(prototype, dict):
-            prototype = dict((method, getattr(prototype, method))
-                             for method in dir(prototype)
-                             if not method.startswith('_'))
+            prototype = {
+                method: getattr(prototype, method)
+                for method in dir(prototype)
+                if not method.startswith('_')
+            }
 
         for attr, method in prototype.items():
             if callable(method):

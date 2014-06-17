@@ -9,12 +9,7 @@ from .exceptions import (
     JSONRPCParseError,
     JSONRPCServerError,
 )
-from .jsonrpc2 import (
-    JSONRPC20BatchRequest,
-    JSONRPC20BatchResponse,
-    JSONRPC20Response,
-)
-from .jsonrpc import JSONRPCRequest
+from .jsonrpc import JSONRPCBatchRequest, JSONRPCBatchResponse, JSONRPCResponse, JSONRPCRequest
 
 
 logger = logging.getLogger(__name__)
@@ -22,10 +17,6 @@ logger = logging.getLogger(__name__)
 
 class JSONRPCResponseManager:
     """ JSON-RPC response manager. """
-
-    RESPONSE_CLASS_MAP = {
-        "2.0": JSONRPC20Response,
-    }
 
     json_object_hook = None
 
@@ -39,32 +30,34 @@ class JSONRPCResponseManager:
         Request could be handled in parallel, it is server responsibility.
 
         :param request_str: JSON string.
-            Will be converted into JSONRPC20Request or JSONRPC20BatchRequest
+            Will be converted into JSONRPCRequest or JSONRPCBatchRequest
         :type request_str: str
-        :type dispatcher: Dispatcher
-        :rtype: JSONRPC20Response | JSONRPC20BatchResponse
+        :type dispatcher: Dispatcher or dict
+        :rtype: JSONRPCResponse or JSONRPCBatchResponse
         """
         try:
             json.loads(request_str, object_hook=self.json_object_hook)
         except (TypeError, ValueError):
-            return JSONRPC20Response(error=JSONRPCParseError()._data)
+            return JSONRPCParseError().as_response()
 
         try:
             request = JSONRPCRequest.from_json(request_str)
         except JSONRPCInvalidRequestException:
-            return JSONRPC20Response(error=JSONRPCInvalidRequest()._data)
+            return JSONRPCInvalidRequest().as_response()
 
-        rs = request if isinstance(request, JSONRPC20BatchRequest) \
-            else [request]
-        responses = [r for r in self._get_responses(rs, dispatcher)
-                     if r is not None]
+        if isinstance(request, JSONRPCBatchRequest):
+            rs = request
+        else:
+            rs = [request]
+
+        responses = [r for r in self._get_responses(rs, dispatcher) if r is not None]
 
         # notifications
         if not responses:
             return
 
-        if isinstance(request, JSONRPC20BatchRequest):
-            return JSONRPC20BatchResponse(*responses)
+        if isinstance(request, JSONRPCBatchRequest):
+            return JSONRPCBatchResponse(responses)
         else:
             return responses[0]
 
@@ -73,22 +66,20 @@ class JSONRPCResponseManager:
         """ Response to each single JSON-RPC Request.
 
         :type dispatcher: Dispatcher
-        :type requests: iterator(JSONRPC20Request)
-        :return iterator(JSONRPC20Response):
+        :type requests: iterator(JSONRPCRequest)
+        :return iterator(JSONRPCResponse):
 
         """
         for request in requests:
-            response = lambda **kwargs: cls.RESPONSE_CLASS_MAP[request.JSONRPC_VERSION](_id=request._id, **kwargs)
-
             try:
                 method = dispatcher[request.method]
             except KeyError:
-                output = response(error=JSONRPCMethodNotFound()._data)
+                output = JSONRPCMethodNotFound().as_response(_id=request._id)
             else:
                 try:
                     result = method(*request.args, **request.kwargs)
                 except TypeError:
-                    output = response(error=JSONRPCInvalidParams()._data)
+                    output = JSONRPCInvalidParams().as_response(_id=request._id)
                 except Exception as e:
                     data = {
                         "type": e.__class__.__name__,
@@ -96,9 +87,9 @@ class JSONRPCResponseManager:
                         "message": str(e),
                     }
                     logger.exception("API Exception: {0}".format(data))
-                    output = response(error=JSONRPCServerError(data=data)._data)
+                    output = JSONRPCServerError(data=data).as_response(_id=request._id)
                 else:
-                    output = response(result=result)
+                    output = JSONRPCResponse(_id=request._id, result=result)
             finally:
                 if not request.is_notification:
                     yield output
