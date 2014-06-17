@@ -1,16 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 from setuptools import setup, find_packages
 from jsonrpc import version
-#
-# Import multiprocessing to prevent test run problem. In case of nosetests
-# (not nose2) there is probles, for details see:
-# https://groups.google.com/forum/#!msg/nose-users/fnJ-kAUbYHQ/_UsLN786ygcJ
-# http://bugs.python.org/issue15881#msg170215w
-try:
-    import multiprocessing
-except ImportError:
-    pass
 
 
 def read(fname):
@@ -20,33 +11,29 @@ def read(fname):
         return ""
 
 setup(
-    name="json-rpc",
+    name="json-rpc-3",
     version=version,
     packages=find_packages(),
-    # test_suite="nose2.collector.collector",
     test_suite="nose.collector",
     tests_require=["nose", "mock"],
-
-    # metadata for upload to PyPI
-    author="Kirill Pavlov",
-    author_email="kirill.pavlov@phystech.edu",
-    url="https://github.com/pavlov99/json-rpc",
-    description="JSON-RPC transport realisation",
+    author='see AUTHORS',
+    maintainer='Orhideous',
+    maintainer_email='orhideous@gmail.com',
+    url="https://github.com/Orhideous/json-rpc",
+    description="Pure Python 3 JSON-RPC 2.0 transport realisation",
     long_description=read('README.rst'),
-
-    # Full list:
-    # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    keywords=["json", "rpc", "json-rpc", "transport"],
     license="MIT",
 )

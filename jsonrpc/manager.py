@@ -1,5 +1,5 @@
-import json
 import logging
+
 from .exceptions import (
     JSONRPCInvalidParams,
     JSONRPCInvalidRequest,
@@ -8,63 +8,51 @@ from .exceptions import (
     JSONRPCParseError,
     JSONRPCServerError,
 )
-from .jsonrpc1 import JSONRPC10Response
-from .jsonrpc2 import (
-    JSONRPC20BatchRequest,
-    JSONRPC20BatchResponse,
-    JSONRPC20Response,
-)
-from .jsonrpc import JSONRPCRequest
+from .jsonrpc import JSONRPCBatchRequest, JSONRPCBatchResponse, JSONRPCResponse, JSONRPCRequest
+
 
 logger = logging.getLogger(__name__)
 
 
-class JSONRPCResponseManager(object):
+class JSONRPCResponseManager:
+    """ JSON-RPC response manager. """
 
-    """ JSON-RPC response manager.
+    def __init__(self, json_object_hook=None):
+        self.json_object_hook = json_object_hook
 
-    Method brings syntactic sugar into library. Given dispatcher it handles
-    request (both single and batch) and handles errors.
-    Request could be handled in parallel, it is server responsibility.
+    def handle(self, request_str, dispatcher):
+        """
+        Method brings syntactic sugar into library.
+        Given dispatcher it handles request (both single and batch) and handles errors.
+        Request could be handled in parallel, it is server responsibility.
 
-    :param str request_str: json string. Will be converted into
-        JSONRPC20Request, JSONRPC20BatchRequest or JSONRPC10Request
-
-    :param dict dispather: dict<function_name:function>.
-
-    """
-
-    RESPONSE_CLASS_MAP = {
-        "1.0": JSONRPC10Response,
-        "2.0": JSONRPC20Response,
-    }
-
-    @classmethod
-    def handle(cls, request_str, dispatcher):
-        if isinstance(request_str, bytes):
-            request_str = request_str.decode("utf-8")
+        :param request_str: JSON string.
+            Will be converted into JSONRPCRequest or JSONRPCBatchRequest
+        :type request_str: str
+        :type dispatcher: Dispatcher or dict
+        :rtype: JSONRPCResponse or JSONRPCBatchResponse
+        """
 
         try:
-            json.loads(request_str)
+            request = JSONRPCRequest.from_json(request_str, object_hook=self.json_object_hook)
         except (TypeError, ValueError):
-            return JSONRPC20Response(error=JSONRPCParseError()._data)
-
-        try:
-            request = JSONRPCRequest.from_json(request_str)
+            return JSONRPCParseError().as_response()
         except JSONRPCInvalidRequestException:
-            return JSONRPC20Response(error=JSONRPCInvalidRequest()._data)
+            return JSONRPCInvalidRequest().as_response()
 
-        rs = request if isinstance(request, JSONRPC20BatchRequest) \
-            else [request]
-        responses = [r for r in cls._get_responses(rs, dispatcher)
-                     if r is not None]
+        if isinstance(request, JSONRPCBatchRequest):
+            rs = request
+        else:
+            rs = [request]
+
+        responses = [r for r in self._get_responses(rs, dispatcher) if r is not None]
 
         # notifications
         if not responses:
             return
 
-        if isinstance(request, JSONRPC20BatchRequest):
-            return JSONRPC20BatchResponse(*responses)
+        if isinstance(request, JSONRPCBatchRequest):
+            return JSONRPCBatchResponse(responses)
         else:
             return responses[0]
 
@@ -72,22 +60,21 @@ class JSONRPCResponseManager(object):
     def _get_responses(cls, requests, dispatcher):
         """ Response to each single JSON-RPC Request.
 
-        :return iterator(JSONRPC20Response):
+        :type dispatcher: Dispatcher
+        :type requests: iterator(JSONRPCRequest)
+        :return iterator(JSONRPCResponse):
 
         """
         for request in requests:
-            response = lambda **kwargs: cls.RESPONSE_CLASS_MAP[
-                request.JSONRPC_VERSION](_id=request._id, **kwargs)
-
             try:
                 method = dispatcher[request.method]
             except KeyError:
-                output = response(error=JSONRPCMethodNotFound()._data)
+                output = JSONRPCMethodNotFound().as_response(_id=request._id)
             else:
                 try:
                     result = method(*request.args, **request.kwargs)
                 except TypeError:
-                    output = response(error=JSONRPCInvalidParams()._data)
+                    output = JSONRPCInvalidParams().as_response(_id=request._id)
                 except Exception as e:
                     data = {
                         "type": e.__class__.__name__,
@@ -95,10 +82,9 @@ class JSONRPCResponseManager(object):
                         "message": str(e),
                     }
                     logger.exception("API Exception: {0}".format(data))
-                    output = response(
-                        error=JSONRPCServerError(data=data)._data)
+                    output = JSONRPCServerError(data=data).as_response(_id=request._id)
                 else:
-                    output = response(result=result)
+                    output = JSONRPCResponse(_id=request._id, result=result)
             finally:
                 if not request.is_notification:
                     yield output
