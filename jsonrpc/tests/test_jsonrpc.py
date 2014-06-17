@@ -447,7 +447,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             "id": "id",
         })
 
-        request = JSONRPCRequest.from_json(str_json)
+        request = JSONRPCRequest().from_json(str_json)
         self.assertTrue(isinstance(request, JSONRPCRequest))
         self.assertEqual(request.method, "add")
         self.assertEqual(request.params, [0, 1])
@@ -513,7 +513,7 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
             {"method": "mul", "params": [1, 2], "jsonrpc": "2.0"},
         ])
 
-        requests = JSONRPCBatchRequest.from_json(str_json)
+        requests = JSONRPCBatchRequest(str_json)
         self.assertTrue(isinstance(requests, JSONRPCBatchRequest))
         for r in requests:
             self.assertTrue(isinstance(r, JSONRPCRequest))
@@ -527,7 +527,7 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
             {"method": "add", "params": [1, 2], "jsonrpc": "2.0", "id": None},
         ])
 
-        requests = JSONRPCRequest.from_json(str_json)
+        requests = JSONRPCRequest(json=str_json)
         self.assertTrue(isinstance(requests, JSONRPCBatchRequest))
         requests = list(requests)
         self.assertEqual(len(requests), 1)

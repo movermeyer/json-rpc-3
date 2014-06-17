@@ -2,8 +2,9 @@ import unittest
 
 from mock import MagicMock
 
-from ..manager import JSONRPCResponseManager
-from ..jsonrpc import JSONRPCBatchRequest, JSONRPCBatchResponse, JSONRPCRequest, JSONRPCResponse
+from jsonrpc.manager import JSONRPCResponseManager
+from jsonrpc.request import JSONRPCBatchRequest, JSONRPCSingleRequest
+from jsonrpc.response import JSONRPCBatchResponse, JSONRPCSingleResponse
 
 
 class TestJSONRPCResponseManager(unittest.TestCase):
@@ -22,48 +23,48 @@ class TestJSONRPCResponseManager(unittest.TestCase):
         self.manager = JSONRPCResponseManager()
 
     def test_returned_type_response(self):
-        request = JSONRPCRequest("add", [[]], _id=0)
+        request = JSONRPCSingleRequest(data={'method': 'add', 'params': [[]], 'id': 0})
         response = self.manager.handle(request.json, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPCResponse))
+        self.assertTrue(isinstance(response, JSONRPCSingleResponse))
 
     def test_returned_type_butch_response(self):
         request = JSONRPCBatchRequest(
-            [JSONRPCRequest("add", [[]], _id=0)])
+            [JSONRPCSingleRequest("add", [[]], _id=0)])
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertTrue(isinstance(response, JSONRPCBatchResponse))
 
     def test_parse_error(self):
         req = '{"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]'
         response = self.manager.handle(req, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPCResponse))
+        self.assertTrue(isinstance(response, JSONRPCSingleResponse))
         self.assertEqual(response.error["message"], "Parse error")
         self.assertEqual(response.error["code"], -32700)
 
     def test_invalid_request(self):
         req = '{"jsonrpc": "2.0", "method": 1, "params": "bar"}'
         response = self.manager.handle(req, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPCResponse))
+        self.assertTrue(isinstance(response, JSONRPCSingleResponse))
         self.assertEqual(response.error["message"], "Invalid Request")
         self.assertEqual(response.error["code"], -32600)
 
     def test_method_not_found(self):
-        request = JSONRPCRequest("does_not_exist", [[]], _id=0)
+        request = JSONRPCSingleRequest("does_not_exist", [[]], _id=0)
         response = self.manager.handle(request.json, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPCResponse))
+        self.assertTrue(isinstance(response, JSONRPCSingleResponse))
         self.assertEqual(response.error["message"], "Method not found")
         self.assertEqual(response.error["code"], -32601)
 
     def test_invalid_params(self):
-        request = JSONRPCRequest("add", {"a": 0}, _id=0)
+        request = JSONRPCSingleRequest("add", {"a": 0}, _id=0)
         response = self.manager.handle(request.json, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPCResponse))
+        self.assertTrue(isinstance(response, JSONRPCSingleResponse))
         self.assertEqual(response.error["message"], "Invalid params")
         self.assertEqual(response.error["code"], -32602)
 
     def test_server_error(self):
-        request = JSONRPCRequest("error", _id=0)
+        request = JSONRPCSingleRequest("error", _id=0)
         response = self.manager.handle(request.json, self.dispatcher)
-        self.assertTrue(isinstance(response, JSONRPCResponse))
+        self.assertTrue(isinstance(response, JSONRPCSingleResponse))
         self.assertEqual(response.error["message"], "Server error")
         self.assertEqual(response.error["code"], -32000)
         self.assertEqual(response.error["data"], {
@@ -73,22 +74,22 @@ class TestJSONRPCResponseManager(unittest.TestCase):
         })
 
     def test_notification_calls_method(self):
-        request = JSONRPCRequest("long_time_method", is_notification=True)
+        request = JSONRPCSingleRequest("long_time_method", is_notification=True)
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertEqual(response, None)
         self.long_time_method.assert_called_once_with()
 
     def test_notification_does_not_return_error_does_not_exist(self):
-        request = JSONRPCRequest("does_not_exist", is_notification=True)
+        request = JSONRPCSingleRequest("does_not_exist", is_notification=True)
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertEqual(response, None)
 
     def test_notification_does_not_return_error_invalid_params(self):
-        request = JSONRPCRequest("add", {"a": 0}, is_notification=True)
+        request = JSONRPCSingleRequest("add", {"a": 0}, is_notification=True)
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertEqual(response, None)
 
     def test_notification_does_not_return_error(self):
-        request = JSONRPCRequest("error", is_notification=True)
+        request = JSONRPCSingleRequest("error", is_notification=True)
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertEqual(response, None)

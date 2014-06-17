@@ -1,136 +1,94 @@
 from abc import ABCMeta, abstractmethod
+from functools import partial
+from json import loads, dumps
 
-from .utils import JSONSerializable
 
+class JSONSerializable(metaclass=ABCMeta):
+    """ Common functionality for json serializable objects."""
 
-class JSONRPCBaseRequest(JSONSerializable, metaclass=ABCMeta):
-    """ Base class for JSON-RPC 2.0 requests."""
-
-    def __init__(self, method=None, params=None, _id=None, is_notification=None):
-        """
-        :param method: A String containing the name of the method to be
-            invoked. Method names that begin with the word rpc followed by a
-            period character (U+002E or ASCII 46) are reserved for rpc-internal
-            methods and extensions and MUST NOT be used for anything else.
-        :type method: str
-
-        :param params: A Structured value that holds the parameter values to be
-            used during the invocation of the method. This member MAY be omitted.
-        :type params: iterable or dict
-
-        :param _id: An identifier established by the Client that MUST contain a
-            String, Number, or NULL value if included. If it is not included it is
-            assumed to be a notification. The value SHOULD normally not be Null
-            [#]_ and Numbers SHOULD NOT contain fractional parts [#]_.
-        :type _id: str or int or None
-
-        :param is_notification: Whether request is notification or not. If
-            value is True, _id is not included to request. It allows to create
-            requests with id = null.
-        :type is_notification: bool
-        The Server MUST reply with the same value in the Response object if
-        included. This member is used to correlate the context between the two
-        objects.
-
-        .. rubric:: Footnotes
-
-        .. [#] The use of Null as a value for the id member in a Request object is
-            discouraged, because this specification uses a value of Null for Responses
-            with an unknown id. Also, because JSON-RPC 1.0 uses an id value of Null
-            for Notifications this could cause confusion in handling.
-        .. [#] Fractional parts may be problematic, since many decimal fractions
-            cannot be represented exactly as binary fractions.
-        """
-        self._data = {}
-        self.method = method
-        self.params = params
-        self._id = _id
-        self.is_notification = is_notification
+    def __init__(self, serialize=None, deserialize=None):
+        self.serialize = partial(dumps, default=serialize)
+        self.deserialize = partial(loads, object_hook=deserialize)
 
     @property
     @abstractmethod
+    def json(self):
+        raise NotImplemented
+
+
+class JSONRPCError(JSONSerializable):
+    """ Error for JSON-RPC communication.
+
+    The error codes from and including -32768 to -32000 are reserved for
+    pre-defined errors. Any code within this range, but not defined explicitly
+    below is reserved for future use. The error codes are nearly the same as
+    those suggested for XML-RPC at the following
+    url: http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php
+    """
+
+    def __init__(self, json=None, code=None, message=None, data=None, serialize=None, deserialize=None):
+        """
+        When a rpc call encounters an error, the Response Object MUST contain the
+        error member with a value that is a Object with the following members in __init__
+
+        :param int code: A Number that indicates the error type that occurred.
+            This MUST be an integer.
+        :param str message: A String providing a short description of the error.
+            The message SHOULD be limited to a concise single sentence.
+        :param data: A Primitive or Structured value that contains additional
+            information about the error.
+            This may be omitted.
+            The value of this member is defined by the Server (e.g. detailed error
+            information, nested errors etc.).
+        :type data: None or int or str or dict or list
+        """
+
+        super().__init__(serialize=serialize, deserialize=deserialize)
+        if json is not None:
+            data = self.deserialize(json)
+            self.code = data["code"]
+            self.message = data["message"]
+            self.data = data.get("data")
+        else:
+            self._data = {}
+            self.code = getattr(self.__class__, "CODE", code)
+            self.message = getattr(self.__class__, "MESSAGE", message)
+            self.data = data
+
+    @property
+    def code(self):
+        return self._data["code"]
+
+    @code.setter
+    def code(self, value):
+        if not isinstance(value, int):
+            raise ValueError("Error code should be integer")
+
+        self._data["code"] = value
+
+    @property
+    def message(self):
+        return self._data["message"]
+
+    @message.setter
+    def message(self, value):
+        if not isinstance(value, str):
+            raise ValueError("Error message should be string")
+        self._data["message"] = value
+
+    @property
     def data(self):
-        return self._data
+        return self._data.get("data")
 
     @data.setter
-    @abstractmethod
     def data(self, value):
-        pass
-
-    @property
-    def args(self):
-        """ Method position arguments.
-
-        :return: method position arguments.
-        :rtype: tuple
-        """
-        return tuple(self.params) if isinstance(self.params, list) else ()
-
-    @property
-    def kwargs(self):
-        """ Method named arguments.
-
-        :return: method named arguments.
-        :rtype: dict
-        """
-        return self.params if isinstance(self.params, dict) else {}
+        if value is not None:
+            self._data["data"] = value
 
     @property
     def json(self):
-        return self.serialize(self.data)
+        return self.serialize(self._data)
 
-
-class JSONRPCBaseResponse(JSONSerializable, metaclass=ABCMeta):
-    """ Base class for JSON-RPC 2.0 responses."""
-
-    def __init__(self, result=None, error=None, _id=None):
-        """
-        When a rpc call is made, the Server MUST reply with a Response, except for
-        in the case of Notifications. The Response is expressed as a single JSON
-        Object, with the following members:
-
-        :param jsonrpc: A String specifying the version of the JSON-RPC
-            protocol. MUST be exactly "2.0".
-        :type jsonrpc: str
-
-        :param result: This member is REQUIRED on success.
-            This member MUST NOT exist if there was an error invoking the method.
-            The value of this member is determined by the method invoked on the
-            Server.
-
-        :param error: This member is REQUIRED on error.
-            This member MUST NOT exist if there was no error triggered during
-            invocation. The value for this member MUST be an Object.
-        :type error: dict
-
-        :param id: This member is REQUIRED.
-            It MUST be the same as the value of the id member in the Request
-            Object. If there was an error in detecting the id in the Request
-            object (e.g. Parse error/Invalid Request), it MUST be Null.
-        :type id: str or int or None
-
-        Either the result member or error member MUST be included, but both
-        members MUST NOT be included.
-        """
-
-        self._data = {}
-        self.result = result
-        self.error = error
-        self._id = _id
-
-        if self.result is None and self.error is None:
-            raise ValueError("Either result or error should be used")
-
-    @property
-    @abstractmethod
-    def data(self):
-        return self._data
-
-    @data.setter
-    @abstractmethod
-    def data(self, value):
-        pass
-
-    @property
-    def json(self):
-        return self.serialize(self.data)
+    def as_response(self, id=None):
+        from jsonrpc.response import JSONRPCSingleResponse
+        return JSONRPCSingleResponse(error=self._data, id=id)

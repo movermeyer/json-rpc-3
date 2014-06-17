@@ -3,8 +3,8 @@ from datetime import datetime
 import json
 import unittest
 
-from jsonrpc.utils import JSONSerializable, json_datetime_hook, FixedOffset, json_datetime_default
-
+from jsonrpc.utils import json_datetime_hook, FixedOffset, json_datetime_default
+from jsonrpc.base import JSONSerializable
 
 class TestJSONSerializable(unittest.TestCase):
     """ Test JSONSerializable functionality."""
@@ -25,15 +25,8 @@ class TestJSONSerializable(unittest.TestCase):
 
     def test_definse_serialize_deserialize(self):
         """ Test classmethods of inherited class."""
-        self.assertEqual(self._class.serialize({}), "{}")
-        self.assertEqual(self._class.deserialize("{}"), {})
-
-    def test_from_json(self):
-        self.assertTrue(isinstance(self._class.from_json('{}'), self._class))
-
-    def test_from_json_incorrect(self):
-        with self.assertRaises(ValueError):
-            self._class.from_json('[]')
+        self.assertEqual(self._class().serialize({}), "{}")
+        self.assertEqual(self._class().deserialize("{}"), {})
 
 
 class TestDatetimeEncoderDecoder(unittest.TestCase):

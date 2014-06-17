@@ -80,7 +80,7 @@ class TestJSONRPCError(unittest.TestCase):
             "data": {},
         })
 
-        request = JSONRPCError.from_json(str_json)
+        request = JSONRPCError(json=str_json)
         self.assertTrue(isinstance(request, JSONRPCError))
         self.assertEqual(request.code, 0)
         self.assertEqual(request.message, "")

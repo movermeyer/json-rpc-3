@@ -2,6 +2,8 @@
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta, tzinfo
 import json
+from jsonrpc.exceptions import JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCServerError
+from jsonrpc.response import JSONRPCSingleResponse
 
 
 class FixedOffset(tzinfo):
@@ -18,26 +20,6 @@ class FixedOffset(tzinfo):
 
     def dst(self, dt):
         return timedelta(0)
-
-
-class JSONSerializable(metaclass=ABCMeta):
-    """ Common functionality for json serializable objects."""
-
-    serialize = staticmethod(json.dumps)
-    deserialize = staticmethod(json.loads)
-
-    @abstractmethod
-    def json(self):
-        raise NotImplemented
-
-    @classmethod
-    def from_json(cls, json_str):
-        data = cls.deserialize(json_str)
-
-        if not isinstance(data, dict):
-            raise ValueError("data should be dict")
-
-        return cls(**data)
 
 
 def json_datetime_default(dt):
@@ -76,3 +58,23 @@ def json_datetime_hook(dictionary):
         dt = dt.replace(tzinfo=FixedOffset(dictionary["__tzshift__"]))
 
     return dt
+
+
+def process_single_request(request, dispatcher):
+    try:
+        method = dispatcher[request.method]
+        result = method(*request.args, **request.kwargs)
+    except KeyError:
+        output = JSONRPCMethodNotFound().as_response(_id=request.id)
+    except TypeError:
+        output = JSONRPCInvalidParams().as_response(_id=request.id)
+    except Exception as e:
+        data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
+        output = JSONRPCServerError(data=data).as_response(_id=request.id)
+    else:
+        output = JSONRPCSingleResponse(request=request, result=result)
+    finally:
+        if not request.is_notification:
+            return output
+
+
