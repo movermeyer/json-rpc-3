@@ -6,7 +6,7 @@ http://www.jsonrpc.org/specification#examples
 """
 import unittest
 import json
-from ..manager import JSONRPCResponseManager
+from jsonrpc.manager import JSONRPCResponseManager
 
 
 def isjsonequal(json1, json2):
@@ -14,11 +14,15 @@ def isjsonequal(json1, json2):
 
 
 class TestJSONRPCExamples(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.manager = JSONRPCResponseManager()
+
     def setUp(self):
         self.dispatcher = {
             "subtract": lambda a, b: a - b,
         }
-        self.manager = JSONRPCResponseManager()
 
     def test_rpc_call_with_positional_parameters(self):
         req = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'  # noqa
