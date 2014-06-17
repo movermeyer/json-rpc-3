@@ -2,35 +2,35 @@ json-rpc-3
 ==========
 
 .. image:: https://travis-ci.org/Orhideous/json-rpc.png
-    :target: https://travis-ci.org/Orhideous/json-rpc
+    :target: https://travis-ci.org/Orhideous/json-rpc-3
     :alt: Build Status
 
 .. image:: https://coveralls.io/repos/Orhideous/json-rpc/badge.png
-    :target: https://coveralls.io/r/Orhideous/json-rpc
+    :target: https://coveralls.io/r/Orhideous/json-rpc-3
     :alt: Coverage Status
 
-.. image:: https://pypip.in/v/json-rpc/badge.png
-    :target: https://crate.io/packages/json-rpc
+.. image:: https://pypip.in/v/json-rpc-3/badge.png
+    :target: https://crate.io/packages/json-rpc-3
     :alt: Version
 
-.. image:: https://pypip.in/d/json-rpc/badge.png
-    :target: https://crate.io/packages/json-rpc
+.. image:: https://pypip.in/d/json-rpc-3/badge.png
+    :target: https://crate.io/packages/json-rpc-3
     :alt: Downloads
 
-.. image:: https://pypip.in/format/json-rpc/badge.png
-    :target: https://pypi.python.org/pypi/json-rpc/
+.. image:: https://pypip.in/format/json-rpc-3/badge.png
+    :target: https://pypi.python.org/pypi/json-rpc-3/
     :alt: Download format
 
 
-.. image:: https://pypip.in/license/json-rpc/badge.png
-    :target: https://pypi.python.org/pypi/json-rpc/
+.. image:: https://pypip.in/license/json-rpc-3/badge.png
+    :target: https://pypi.python.org/pypi/json-rpc-3/
     :alt: License
 
 
 `JSON-RPC2.0 <http://www.jsonrpc.org/specification>`_ transport specification implementation. Supports python3.2+.
-Fork of
+Fork of `json-rpc <https://github.com/pavlov99/json-rpc>`_.
 
-Documentation: http://json-rpc.readthedocs.org
+Documentation: http://json-rpc-3.readthedocs.org
 
 This implementation does not have any transport functionality realization, only protocol.
 Any client or server realization is easy based on current code, but requires transport libraries, such as requests, gevent or zmq, see `examples <https://github.com/Orhideous/json-rpc/tree/master/examples>`_.
@@ -40,14 +40,14 @@ Install
 
 .. code-block:: python
 
-    pip install json-rpc
+    pip install json-rpc-3
 
 Tests
 -----
 
 .. code-block:: python
 
-    tox
+    nosetests
 
 Quickstart
 ----------
@@ -112,4 +112,5 @@ Client (uses `requests <http://www.python-requests.org/en/latest/>`_)
 
 Competitors
 -----------
-There are `several libraries <http://en.wikipedia.org/wiki/JSON-RPC#Implementations>`_ implementing JSON-RPC protocol. List below represents python libraries, none of the supports python3. tinyrpc looks better than others.
+There are `several libraries <http://en.wikipedia.org/wiki/JSON-RPC#Implementations>`_ implementing JSON-RPC protocol.
+List below represents python libraries, none of the supports python3. tinyrpc looks better than others.

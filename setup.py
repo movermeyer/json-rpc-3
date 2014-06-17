@@ -20,7 +20,7 @@ setup(
     maintainer='Orhideous',
     maintainer_email='orhideous@gmail.com',
     url="https://github.com/Orhideous/json-rpc",
-    description="JSON-RPC transport realisation",
+    description="Pure python 3 JSON-RPC transport realisation",
     long_description=read('README.rst'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -28,6 +28,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
