@@ -1,3 +1,11 @@
+2014-06-17 orhideous@gmail.com
+
+    * Drop Python 2.x support
+    * Drop JSON-RPC 1.0 support
+    * Add datetime serialization/deserialization
+    * Available json.object_hook
+    * Code cleanup
+
 2014-05-25 kirill.pavlov@phystech.edu
 
 	* Add python 2.6 support
