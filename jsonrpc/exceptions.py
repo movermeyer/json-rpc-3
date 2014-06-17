@@ -42,7 +42,6 @@ class JSONRPCError:
     serialize = staticmethod(json.dumps)
     deserialize = staticmethod(json.loads)
 
-
     def __init__(self, code=None, message=None, data=None):
         self._data = {}
         self.code = getattr(self.__class__, "CODE", code)

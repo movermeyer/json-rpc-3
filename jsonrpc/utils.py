@@ -61,10 +61,6 @@ class DatetimeEncoder(json.JSONEncoder):
         return dt_dct
 
     def encode(self, o):
-        """ Encode JSON.
-        :return str: A JSON encoded string
-        """
-
         if isinstance(o, datetime):
             return super(DatetimeEncoder, self).encode(self.datetime_to_dict(o))
 
@@ -72,6 +68,12 @@ class DatetimeEncoder(json.JSONEncoder):
 
 
 def json_datetime_hook(dictionary):
+    """
+    JSON object_hook function for decoding datetime objects.
+    Used in pair with
+    :return: Datetime object
+    :rtype: datetime
+    """
     if "__datetime__" not in dictionary:
         return dictionary
 
