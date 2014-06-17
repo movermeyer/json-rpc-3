@@ -40,13 +40,11 @@ class JSONSerializable(metaclass=ABCMeta):
         return cls(**data)
 
 
-class DatetimeEncoder(json.JSONEncoder):
+def json_datetime_default(dt):
     """ Encoder for datetime objects.
     Usage: json.dumps(object, cls=DatetimeEncoder)
     """
-
-    @staticmethod
-    def datetime_to_dict(dt):
+    if isinstance(dt, datetime):
         dt_dct = {"__datetime__": [
             dt.year,
             dt.month,
@@ -59,12 +57,7 @@ class DatetimeEncoder(json.JSONEncoder):
         if dt.tzinfo is not None:
             dt_dct["__tzshift__"] = dt.utcoffset().seconds
         return dt_dct
-
-    def encode(self, o):
-        if isinstance(o, datetime):
-            return super(DatetimeEncoder, self).encode(self.datetime_to_dict(o))
-
-        return super(DatetimeEncoder, self).encode(o)
+    raise TypeError
 
 
 def json_datetime_hook(dictionary):

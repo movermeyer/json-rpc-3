@@ -3,12 +3,10 @@ from datetime import datetime
 import json
 import unittest
 
-from ..utils import JSONSerializable, DatetimeEncoder, \
-    json_datetime_hook, FixedOffset
+from jsonrpc.utils import JSONSerializable, json_datetime_hook, FixedOffset, json_datetime_default
 
 
 class TestJSONSerializable(unittest.TestCase):
-
     """ Test JSONSerializable functionality."""
 
     def setUp(self):
@@ -39,7 +37,6 @@ class TestJSONSerializable(unittest.TestCase):
 
 
 class TestDatetimeEncoderDecoder(unittest.TestCase):
-
     """ Test DatetimeEncoder and json_datetime_hook functionality."""
 
     def test_datetime(self):
@@ -48,16 +45,18 @@ class TestDatetimeEncoderDecoder(unittest.TestCase):
         with self.assertRaises(TypeError):
             json.dumps(obj)
 
-        string = json.dumps(obj, cls=DatetimeEncoder)
+        string = json.dumps(obj, default=json_datetime_default)
 
-        self.assertEqual(obj,
-                         json.loads(string, object_hook=json_datetime_hook))
+        self.assertEqual(obj, json.loads(string, object_hook=json_datetime_hook))
+
+    def test_complex(self):
+        obj = {'id': '1', 'params': (datetime(2014, 6, 17, 9, 38, 39, 911853),), 'jsonrpc': 2.0, 'method': 'w'}
+        json.dumps(obj, default=json_datetime_default)
 
     def test_skip_nondt_obj(self):
         obj = {'__weird__': True}
-        string = json.dumps(obj, cls=DatetimeEncoder)
-        self.assertEqual(obj,
-                         json.loads(string, object_hook=json_datetime_hook))
+        string = json.dumps(obj, default=json_datetime_default)
+        self.assertEqual(obj, json.loads(string, object_hook=json_datetime_hook))
 
     def test_datetime_tzinfo(self):
         obj = datetime.now().replace(tzinfo=FixedOffset(3600))
@@ -65,7 +64,6 @@ class TestDatetimeEncoderDecoder(unittest.TestCase):
         with self.assertRaises(TypeError):
             json.dumps(obj)
 
-        string = json.dumps(obj, cls=DatetimeEncoder)
+        string = json.dumps(obj, default=json_datetime_default)
 
-        self.assertEqual(obj,
-                         json.loads(string, object_hook=json_datetime_hook))
+        self.assertEqual(obj, json.loads(string, object_hook=json_datetime_hook))
