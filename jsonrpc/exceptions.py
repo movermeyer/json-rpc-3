@@ -90,6 +90,7 @@ class JSONRPCError:
 
     def as_response(self, _id=None):
         import jsonrpc
+
         return jsonrpc.JSONRPCResponse(error=self._data, _id=_id)
 
 
