@@ -91,12 +91,12 @@ class JSONRPCError:
     def as_response(self, _id=None):
         return jsonrpc.JSONRPCResponse(error=self._data, _id=_id)
 
+
 class JSONRPCParseError(JSONRPCError):
     """ Parse Error.
 
     Invalid JSON was received by the server.
     An error occurred on the server while parsing the JSON text.
-
     """
 
     CODE = -32700
@@ -107,7 +107,6 @@ class JSONRPCInvalidRequest(JSONRPCError):
     """ Invalid Request.
 
     The JSON sent is not a valid Request object.
-
     """
 
     CODE = -32600
@@ -118,7 +117,6 @@ class JSONRPCMethodNotFound(JSONRPCError):
     """ Method not found.
 
     The method does not exist / is not available.
-
     """
 
     CODE = -32601
@@ -129,7 +127,6 @@ class JSONRPCInvalidParams(JSONRPCError):
     """ Invalid params.
 
     Invalid method parameter(s).
-
     """
 
     CODE = -32602
@@ -140,7 +137,6 @@ class JSONRPCInternalError(JSONRPCError):
     """ Internal error.
 
     Internal JSON-RPC error.
-
     """
 
     CODE = -32603
@@ -151,7 +147,6 @@ class JSONRPCServerError(JSONRPCError):
     """ Server error.
 
     Reserved for implementation-defined server-errors.
-
     """
 
     CODE = -32000

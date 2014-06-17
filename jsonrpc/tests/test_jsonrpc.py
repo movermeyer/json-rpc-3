@@ -288,103 +288,115 @@ class TestJSONRPCRequest(unittest.TestCase):
 
     def test_serialize_method_1(self):
         r = JSONRPCRequest("add")
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_method_2(self):
         r = JSONRPCRequest(method="add")
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_method_3(self):
         r = JSONRPCRequest("add", None)
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_params_1(self):
         r = JSONRPCRequest("add", params=None, _id=None)
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_params_2(self):
         r = JSONRPCRequest("add", [])
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "params": [],
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "params": [],
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_params_3(self):
         r = JSONRPCRequest("add", ())
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "params": [],
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "params": [],
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_params_4(self):
         r = JSONRPCRequest("add", (1, 2))
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "params": [1, 2],
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "params": [1, 2],
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_params_5(self):
         r = JSONRPCRequest("add", {"a": 0})
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "params": {"a": 0},
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "params": {"a": 0},
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_id_1(self):
         r = JSONRPCRequest("add", _id="null")
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": "null",
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": "null",
+            }, json.loads(r.json))
 
     def test_serialize_id_2(self):
         r = JSONRPCRequest("add", _id=None)
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": None,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": None,
+            }, json.loads(r.json))
 
     def test_serialize_id_3(self):
         r = JSONRPCRequest("add", _id="id")
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": "id",
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": "id",
+            }, json.loads(r.json))
 
     def test_serialize_id_4(self):
         r = JSONRPCRequest("add", _id=0)
-        self.assertTrue({
-                            "jsonrpc": "2.0",
-                            "method": "add",
-                            "id": 0,
-                        }, json.loads(r.json))
+        self.assertTrue(
+            {
+                "jsonrpc": "2.0",
+                "method": "add",
+                "id": 0,
+            }, json.loads(r.json))
 
     def test_from_json_request_no_id(self):
         str_json = json.dumps({

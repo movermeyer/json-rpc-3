@@ -72,7 +72,7 @@ class DatetimeEncoder(json.JSONEncoder):
 
 
 def json_datetime_hook(dictionary):
-    if not "__datetime__" in dictionary:
+    if "__datetime__" not in dictionary:
         return dictionary
 
     dt = datetime(*dictionary["__datetime__"])

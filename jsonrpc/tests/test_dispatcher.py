@@ -8,11 +8,11 @@ class TestDispatcher(unittest.TestCase):
 
     def setUp(self):
         self.d = Dispatcher()
-        
+
     def test_getter(self):
 
         with self.assertRaises(KeyError):
-            _ = self.d["method"]
+            print(self.d["method"])
 
         self.d["add"] = lambda *args: sum(args)
         self.assertEqual(self.d["add"](1, 1), 2)
@@ -87,4 +87,3 @@ class TestDispatcher(unittest.TestCase):
     def test_dispatcher_representation(self):
 
         self.assertEqual('{}', repr(self.d))
-
