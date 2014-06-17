@@ -75,8 +75,8 @@ class JSONRPCRequest(JSONRPCBaseRequest):
         self._data["id"] = value
 
     @classmethod
-    def from_json(cls, json_str):
-        data = cls.deserialize(json_str)
+    def from_json(cls, json_str, object_hook=None):
+        data = cls.deserialize(json_str, object_hook=object_hook)
 
         is_batch = isinstance(data, list)
         data = data if is_batch else [data]

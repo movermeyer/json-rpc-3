@@ -1,4 +1,3 @@
-import json
 import logging
 
 from .exceptions import (
@@ -18,8 +17,6 @@ logger = logging.getLogger(__name__)
 class JSONRPCResponseManager:
     """ JSON-RPC response manager. """
 
-    json_object_hook = None
-
     def __init__(self, json_object_hook=None):
         self.json_object_hook = json_object_hook
 
@@ -35,13 +32,11 @@ class JSONRPCResponseManager:
         :type dispatcher: Dispatcher or dict
         :rtype: JSONRPCResponse or JSONRPCBatchResponse
         """
-        try:
-            json.loads(request_str, object_hook=self.json_object_hook)
-        except (TypeError, ValueError):
-            return JSONRPCParseError().as_response()
 
         try:
-            request = JSONRPCRequest.from_json(request_str)
+            request = JSONRPCRequest.from_json(request_str, object_hook=self.json_object_hook)
+        except (TypeError, ValueError):
+            return JSONRPCParseError().as_response()
         except JSONRPCInvalidRequestException:
             return JSONRPCInvalidRequest().as_response()
 
