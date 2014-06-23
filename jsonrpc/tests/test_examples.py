@@ -25,7 +25,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         }
 
     def test_rpc_call_with_positional_parameters(self):
-        req = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'  # noqa
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
@@ -64,7 +64,8 @@ class TestJSONRPCExamples(unittest.TestCase):
         ))
 
     def test_notification(self):
-        req = '{"jsonrpc": "2.0", "method": "update", "params": [1,2,3,4,5]}'
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 10, "subtrahend": 4}}'
+
         response = self.manager.handle(req, self.dispatcher)
         self.assertEqual(response, None)
 

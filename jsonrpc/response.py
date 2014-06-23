@@ -1,11 +1,12 @@
 ﻿""" JSON-RPC response wrappers """
-from jsonrpc.base import JSONSerializable, JSONRPCError
+import json
+from jsonrpc.base import JSONRPCError
 
 
-class JSONRPCSingleResponse(JSONSerializable):
+class JSONRPCSingleResponse:
     """ JSON-RPC response object to JSONRPCRequest. """
 
-    def __init__(self, request=None, result=None, error=None, id=None, serialize=None, deserialize=None):
+    def __init__(self, request=None, result=None, error=None, id=None):
         """
         When a rpc call is made, the Server MUST reply with a Response, except for
         in the case of Notifications. The Response is expressed as a single JSON
@@ -31,9 +32,9 @@ class JSONRPCSingleResponse(JSONSerializable):
         members MUST NOT be included.
         """
 
-        super().__init__(serialize=serialize, deserialize=deserialize)
         self._data = {}
         self.result = result
+        self.request = request
         self.error = error
         self.id = request.id if request else id
 
@@ -74,7 +75,6 @@ class JSONRPCSingleResponse(JSONSerializable):
         if value is not None:
             if self.result is not None:
                 raise ValueError("Either result or error should be used")
-
             JSONRPCError(**value)
             self._data["error"] = value
 
@@ -86,18 +86,26 @@ class JSONRPCSingleResponse(JSONSerializable):
     def id(self, value):
         if value is not None and not isinstance(value, (str, int)):
             raise ValueError("id should be string or integer")
-
         self._data["id"] = value
 
     @property
     def json(self):
-        return self.serialize(self.data)
+        if self.error:
+            serialize = json.dumps
+        else:
+            serialize = self.request.serialize
+        return serialize(self.data)  # Use serializer from request object
 
 
-class JSONRPCBatchResponse(JSONSerializable):
-    def __init__(self, responses=None, serialize=None, deserialize=None):
-        super().__init__(serialize=serialize, deserialize=deserialize)
+class JSONRPCBatchResponse:
+    def __init__(self, responses=None, serialize=None):
+        """
+        :param responses: List of JSONRPCSingleResponse objects
+        :type responses: list(JSONRPCSingleResponse)
+        :param serialize: serializer json.dumps() by default
+        """
         self.responses = responses
+        self.serialize = serialize
 
     @property
     def data(self):

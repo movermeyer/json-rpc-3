@@ -1,32 +1,15 @@
 import logging
 
-from .exceptions import (
-    JSONRPCInvalidParams,
-    JSONRPCInvalidRequest,
-    JSONRPCInvalidRequestException,
-    JSONRPCMethodNotFound,
-    JSONRPCParseError,
-    JSONRPCServerError,
-)
-from jsonrpc.request import JSONRPCRequest, JSONRPCSingleRequest
+from jsonrpc.exceptions import JSONRPCInvalidRequest, JSONRPCInvalidRequestException, JSONRPCParseError
+from jsonrpc.request import JSONRPCSingleRequest, JSONRPCBatchRequest
 from jsonrpc.response import JSONRPCSingleResponse
-
+from jsonrpc.base import JSONSerializable
 
 logger = logging.getLogger(__name__)
 
 
-class JSONRPCResponseManager:
+class JSONRPCResponseManager(JSONSerializable):
     """ JSON-RPC response manager. """
-
-    def __init__(self, serialize=None, deserialize=None):
-        """
-        :param serialize: default for json.dumps()
-        :type serialize: callable
-        :param deserialize: object_hook for json.loads()
-        :type deserialize: callable
-        """
-        self.serialize = serialize
-        self.deserialize = deserialize
 
     def handle(self, request_str, dispatcher):
         """
@@ -42,11 +25,7 @@ class JSONRPCResponseManager:
         """
 
         try:
-            request = JSONRPCRequest.parse(
-                request_string=request_str,
-                serialize=self.serialize,
-                deserialize=self.deserialize
-            )
+            request = self.parse(request_string=request_str)
         except (TypeError, ValueError):
             return JSONRPCParseError().as_response()
         except JSONRPCInvalidRequestException:
@@ -54,34 +33,26 @@ class JSONRPCResponseManager:
         else:
             return request.process(dispatcher)
 
-    @classmethod
-    def _get_results(cls, data, dispatcher):
-        """ Response to each single JSON-RPC Request.
+    def parse(self, request_string=None):
+        """ Parse json and returns appropriate request object
 
-        :type dispatcher: Dispatcher
-        :type data: JSONRPCSingleRequest or JSONRPCBatchRequest
-        :return iterator(JSONRPCResponse):
-
+        :param request_string: String with JSON-encoded request(s)
+        :type request_string: str
+        :rtype: JSONRPCSingleRequest or JSONRPCBatchRequest
         """
-        if isinstance(data, JSONRPCSingleRequest):
-            data = [data.data]
+        data = self.deserialize(request_string)
 
-        for request in data:
-            try:
-                method = dispatcher[request.method]
-            except KeyError:
-                output = JSONRPCMethodNotFound().as_response(_id=request._id)
-            else:
-                try:
-                    result = method(*request.args, **request.kwargs)
-                except TypeError:
-                    output = JSONRPCInvalidParams().as_response(_id=request._id)
-                except Exception as e:
+        if isinstance(data, list):
+            request = JSONRPCBatchRequest(
+                serialize_hook=self.serialize_hook,
+                data=[JSONRPCSingleRequest(serialize_hook=self.serialize_hook, data=reqest_dct) for reqest_dct in data]
+            )
+        elif isinstance(data, dict):
+            request = JSONRPCSingleRequest(serialize_hook=self.serialize_hook, data=data)
+        else:
+            raise JSONRPCInvalidRequestException
 
-                    logger.exception("API Exception: {0}".format(data))
-                    output = JSONRPCServerError(data=data).as_response(_id=request._id)
-                else:
-                    output = JSONRPCSingleResponse(request=request, result=result)
-            finally:
-                if not request.is_notification:
-                    yield output
+        if request:
+            return request
+        else:
+            raise JSONRPCInvalidRequestException

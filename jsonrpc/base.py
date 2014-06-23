@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from functools import partial
 from json import loads, dumps
 
@@ -6,14 +6,11 @@ from json import loads, dumps
 class JSONSerializable(metaclass=ABCMeta):
     """ Common functionality for json serializable objects."""
 
-    def __init__(self, serialize=None, deserialize=None):
-        self.serialize = partial(dumps, default=serialize)
-        self.deserialize = partial(loads, object_hook=deserialize)
-
-    @property
-    @abstractmethod
-    def json(self):
-        raise NotImplemented
+    def __init__(self, serialize_hook=None, deserialize_hook=None):
+        self.serialize = partial(dumps, default=serialize_hook)
+        self.deserialize = partial(loads, object_hook=deserialize_hook)
+        self.serialize_hook = serialize_hook
+        self.deserialize_hook = deserialize_hook
 
 
 class JSONRPCError(JSONSerializable):
@@ -26,7 +23,7 @@ class JSONRPCError(JSONSerializable):
     url: http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php
     """
 
-    def __init__(self, json=None, code=None, message=None, data=None, serialize=None, deserialize=None):
+    def __init__(self, json=None, code=None, message=None, data=None, serialize_hook=None, deserialize_hook=None):
         """
         When a rpc call encounters an error, the Response Object MUST contain the
         error member with a value that is a Object with the following members in __init__
@@ -43,7 +40,7 @@ class JSONRPCError(JSONSerializable):
         :type data: None or int or str or dict or list
         """
 
-        super().__init__(serialize=serialize, deserialize=deserialize)
+        super().__init__(serialize_hook=serialize_hook, deserialize_hook=deserialize_hook)
         if json is not None:
             data = self.deserialize(json)
             self.code = data["code"]

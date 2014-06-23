@@ -1,12 +1,13 @@
 import json
 import unittest
 
-from ..exceptions import JSONRPCInvalidRequestException
-from ..jsonrpc import JSONRPCRequest, JSONRPCBatchRequest, JSONRPCResponse, JSONRPCBatchResponse
+from jsonrpc.exceptions import JSONRPCInvalidRequestException
+from jsonrpc.request import JSONRPCSingleRequest, JSONRPCBatchRequest
+from jsonrpc.response import JSONRPCSingleResponse, JSONRPCBatchResponse
 
 
-class TestJSONRPCRequest(unittest.TestCase):
-    """ Test JSONRPCRequest functionality."""
+class TestJSONRPCSingleRequest(unittest.TestCase):
+    """ Test JSONRPCSingleRequest functionality."""
 
     def setUp(self):
         self.request_params = {
@@ -17,115 +18,115 @@ class TestJSONRPCRequest(unittest.TestCase):
 
     def test_correct_init(self):
         """ Test object is created."""
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_validation_incorrect_no_parameters(self):
         with self.assertRaises(ValueError):
-            JSONRPCRequest()
+            JSONRPCSingleRequest()
 
     def test_method_validation_str(self):
         self.request_params.update({"method": "add"})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_method_validation_not_str(self):
         self.request_params.update({"method": []})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"method": {}})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
     def test_method_validation_str_rpc_prefix(self):
         """ Test method SHOULD NOT starts with rpc. """
         self.request_params.update({"method": "rpc."})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"method": "rpc.test"})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"method": "rpccorrect"})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"method": "rpc"})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_params_validation_list(self):
         self.request_params.update({"params": []})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"params": [0]})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_params_validation_tuple(self):
         self.request_params.update({"params": ()})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"params": tuple([0])})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_params_validation_dict(self):
         self.request_params.update({"params": {}})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"params": {"a": 0}})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_params_validation_none(self):
         self.request_params.update({"params": None})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_params_validation_incorrect(self):
         self.request_params.update({"params": "str"})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
     def test_request_args(self):
-        self.assertEqual(JSONRPCRequest("add").args, ())
-        self.assertEqual(JSONRPCRequest("add", []).args, ())
-        self.assertEqual(JSONRPCRequest("add", {"a": 1}).args, ())
-        self.assertEqual(JSONRPCRequest("add", [1, 2]).args, (1, 2))
+        self.assertEqual(JSONRPCSingleRequest("add").args, ())
+        self.assertEqual(JSONRPCSingleRequest("add", []).args, ())
+        self.assertEqual(JSONRPCSingleRequest("add", {"a": 1}).args, ())
+        self.assertEqual(JSONRPCSingleRequest("add", [1, 2]).args, (1, 2))
 
     def test_request_kwargs(self):
-        self.assertEqual(JSONRPCRequest("add").kwargs, {})
-        self.assertEqual(JSONRPCRequest("add", [1, 2]).kwargs, {})
-        self.assertEqual(JSONRPCRequest("add", {}).kwargs, {})
-        self.assertEqual(JSONRPCRequest("add", {"a": 1}).kwargs, {"a": 1})
+        self.assertEqual(JSONRPCSingleRequest("add").kwargs, {})
+        self.assertEqual(JSONRPCSingleRequest("add", [1, 2]).kwargs, {})
+        self.assertEqual(JSONRPCSingleRequest("add", {}).kwargs, {})
+        self.assertEqual(JSONRPCSingleRequest("add", {"a": 1}).kwargs, {"a": 1})
 
     def test_id_validation_string(self):
         self.request_params.update({"_id": "id"})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_id_validation_int(self):
         self.request_params.update({"_id": 0})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_id_validation_null(self):
         self.request_params.update({"_id": "null"})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_id_validation_none(self):
         self.request_params.update({"_id": None})
-        JSONRPCRequest(**self.request_params)
+        JSONRPCSingleRequest(**self.request_params)
 
     def test_id_validation_float(self):
         self.request_params.update({"_id": 0.1})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
     def test_id_validation_incorrect(self):
         self.request_params.update({"_id": []})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
         self.request_params.update({"_id": ()})
         with self.assertRaises(ValueError):
-            JSONRPCRequest(**self.request_params)
+            JSONRPCSingleRequest(**self.request_params)
 
     def test_data_method_1(self):
-        r = JSONRPCRequest("add")
+        r = JSONRPCSingleRequest("add")
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -133,7 +134,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_method_2(self):
-        r = JSONRPCRequest(method="add")
+        r = JSONRPCSingleRequest(method="add")
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -141,7 +142,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_method_3(self):
-        r = JSONRPCRequest("add", None)
+        r = JSONRPCSingleRequest("add", None)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -149,7 +150,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_params_1(self):
-        r = JSONRPCRequest("add", params=None, _id=None)
+        r = JSONRPCSingleRequest("add", params=None, _id=None)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -157,7 +158,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_params_2(self):
-        r = JSONRPCRequest("add", [])
+        r = JSONRPCSingleRequest("add", [])
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -166,7 +167,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_params_3(self):
-        r = JSONRPCRequest("add", ())
+        r = JSONRPCSingleRequest("add", ())
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -175,7 +176,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_params_4(self):
-        r = JSONRPCRequest("add", (1, 2))
+        r = JSONRPCSingleRequest("add", (1, 2))
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -184,7 +185,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_params_5(self):
-        r = JSONRPCRequest("add", {"a": 0})
+        r = JSONRPCSingleRequest("add", {"a": 0})
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -193,7 +194,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_id_1(self):
-        r = JSONRPCRequest("add", _id="null")
+        r = JSONRPCSingleRequest("add", _id="null")
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -201,14 +202,14 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_id_1_notification(self):
-        r = JSONRPCRequest("add", _id="null", is_notification=True)
+        r = JSONRPCSingleRequest("add", _id="null", is_notification=True)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
         })
 
     def test_data_id_2(self):
-        r = JSONRPCRequest("add", _id=None)
+        r = JSONRPCSingleRequest("add", _id=None)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -216,14 +217,14 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_id_2_notification(self):
-        r = JSONRPCRequest("add", _id=None, is_notification=True)
+        r = JSONRPCSingleRequest("add", _id=None, is_notification=True)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
         })
 
     def test_data_id_3(self):
-        r = JSONRPCRequest("add", _id="id")
+        r = JSONRPCSingleRequest("add", _id="id")
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -231,14 +232,14 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_id_3_notification(self):
-        r = JSONRPCRequest("add", _id="id", is_notification=True)
+        r = JSONRPCSingleRequest("add", _id="id", is_notification=True)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
         })
 
     def test_data_id_4(self):
-        r = JSONRPCRequest("add", _id=0)
+        r = JSONRPCSingleRequest("add", _id=0)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
@@ -246,38 +247,38 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
     def test_data_id_4_notification(self):
-        r = JSONRPCRequest("add", _id=0, is_notification=True)
+        r = JSONRPCSingleRequest("add", _id=0, is_notification=True)
         self.assertEqual(r.data, {
             "jsonrpc": "2.0",
             "method": "add",
         })
 
     def test_is_notification(self):
-        r = JSONRPCRequest("add")
+        r = JSONRPCSingleRequest("add")
         self.assertFalse(r.is_notification)
 
-        r = JSONRPCRequest("add", _id=None)
+        r = JSONRPCSingleRequest("add", _id=None)
         self.assertFalse(r.is_notification)
 
-        r = JSONRPCRequest("add", _id="null")
+        r = JSONRPCSingleRequest("add", _id="null")
         self.assertFalse(r.is_notification)
 
-        r = JSONRPCRequest("add", _id=0)
+        r = JSONRPCSingleRequest("add", _id=0)
         self.assertFalse(r.is_notification)
 
-        r = JSONRPCRequest("add", is_notification=True)
+        r = JSONRPCSingleRequest("add", is_notification=True)
         self.assertTrue(r.is_notification)
 
-        r = JSONRPCRequest("add", is_notification=True, _id=None)
+        r = JSONRPCSingleRequest("add", is_notification=True, _id=None)
         self.assertTrue(r.is_notification)
         self.assertNotIn("id", r.data)
 
-        r = JSONRPCRequest("add", is_notification=True, _id=0)
+        r = JSONRPCSingleRequest("add", is_notification=True, _id=0)
         self.assertTrue(r.is_notification)
         self.assertNotIn("id", r.data)
 
     def test_set_unset_notification_keep_id(self):
-        r = JSONRPCRequest("add", is_notification=True, _id=0)
+        r = JSONRPCSingleRequest("add", is_notification=True, _id=0)
         self.assertTrue(r.is_notification)
         self.assertFalse("id" in r.data)
 
@@ -287,7 +288,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         self.assertEqual(r.data["id"], 0)
 
     def test_serialize_method_1(self):
-        r = JSONRPCRequest("add")
+        r = JSONRPCSingleRequest("add")
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -296,7 +297,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_method_2(self):
-        r = JSONRPCRequest(method="add")
+        r = JSONRPCSingleRequest(method="add")
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -305,7 +306,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_method_3(self):
-        r = JSONRPCRequest("add", None)
+        r = JSONRPCSingleRequest("add", None)
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -314,7 +315,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_params_1(self):
-        r = JSONRPCRequest("add", params=None, _id=None)
+        r = JSONRPCSingleRequest("add", params=None, _id=None)
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -323,7 +324,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_params_2(self):
-        r = JSONRPCRequest("add", [])
+        r = JSONRPCSingleRequest("add", [])
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -333,7 +334,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_params_3(self):
-        r = JSONRPCRequest("add", ())
+        r = JSONRPCSingleRequest("add", ())
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -343,7 +344,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_params_4(self):
-        r = JSONRPCRequest("add", (1, 2))
+        r = JSONRPCSingleRequest("add", (1, 2))
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -353,7 +354,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_params_5(self):
-        r = JSONRPCRequest("add", {"a": 0})
+        r = JSONRPCSingleRequest("add", {"a": 0})
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -363,7 +364,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_id_1(self):
-        r = JSONRPCRequest("add", _id="null")
+        r = JSONRPCSingleRequest("add", _id="null")
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -372,7 +373,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_id_2(self):
-        r = JSONRPCRequest("add", _id=None)
+        r = JSONRPCSingleRequest("add", _id=None)
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -381,7 +382,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_id_3(self):
-        r = JSONRPCRequest("add", _id="id")
+        r = JSONRPCSingleRequest("add", _id="id")
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -390,7 +391,7 @@ class TestJSONRPCRequest(unittest.TestCase):
             }, json.loads(r.json))
 
     def test_serialize_id_4(self):
-        r = JSONRPCRequest("add", _id=0)
+        r = JSONRPCSingleRequest("add", _id=0)
         self.assertTrue(
             {
                 "jsonrpc": "2.0",
@@ -405,8 +406,8 @@ class TestJSONRPCRequest(unittest.TestCase):
             "jsonrpc": "2.0",
         })
 
-        request = JSONRPCRequest.from_json(str_json)
-        self.assertTrue(isinstance(request, JSONRPCRequest))
+        request = JSONRPCSingleRequest.from_json(str_json)
+        self.assertTrue(isinstance(request, JSONRPCSingleRequest))
         self.assertEqual(request.method, "add")
         self.assertEqual(request.params, [1, 2])
         self.assertEqual(request._id, None)
@@ -418,8 +419,8 @@ class TestJSONRPCRequest(unittest.TestCase):
             "jsonrpc": "2.0",
         })
 
-        request = JSONRPCRequest.from_json(str_json)
-        self.assertTrue(isinstance(request, JSONRPCRequest))
+        request = JSONRPCSingleRequest.from_json(str_json)
+        self.assertTrue(isinstance(request, JSONRPCSingleRequest))
         self.assertEqual(request.method, "add")
         self.assertEqual(request.params, None)
         self.assertEqual(request._id, None)
@@ -432,8 +433,8 @@ class TestJSONRPCRequest(unittest.TestCase):
             "id": None,
         })
 
-        request = JSONRPCRequest.from_json(str_json)
-        self.assertTrue(isinstance(request, JSONRPCRequest))
+        request = JSONRPCSingleRequest.from_json(str_json)
+        self.assertTrue(isinstance(request, JSONRPCSingleRequest))
         self.assertEqual(request.method, "add")
         self.assertEqual(request.params, None)
         self.assertEqual(request._id, None)
@@ -447,8 +448,8 @@ class TestJSONRPCRequest(unittest.TestCase):
             "id": "id",
         })
 
-        request = JSONRPCRequest().from_json(str_json)
-        self.assertTrue(isinstance(request, JSONRPCRequest))
+        request = JSONRPCSingleRequest().from_json(str_json)
+        self.assertTrue(isinstance(request, JSONRPCSingleRequest))
         self.assertEqual(request.method, "add")
         self.assertEqual(request.params, [0, 1])
         self.assertEqual(request._id, "id")
@@ -460,7 +461,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
         with self.assertRaises(JSONRPCInvalidRequestException):
-            JSONRPCRequest.from_json(str_json)
+            JSONRPCSingleRequest.from_json(str_json)
 
     def test_from_json_invalid_request_method(self):
         str_json = json.dumps({
@@ -468,7 +469,7 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
         with self.assertRaises(JSONRPCInvalidRequestException):
-            JSONRPCRequest.from_json(str_json)
+            JSONRPCSingleRequest.from_json(str_json)
 
     def test_from_json_invalid_request_extra_data(self):
         str_json = json.dumps({
@@ -478,10 +479,10 @@ class TestJSONRPCRequest(unittest.TestCase):
         })
 
         with self.assertRaises(JSONRPCInvalidRequestException):
-            JSONRPCRequest.from_json(str_json)
+            JSONRPCSingleRequest.from_json(str_json)
 
     def test_data_setter(self):
-        request = JSONRPCRequest(**self.request_params)
+        request = JSONRPCSingleRequest(**self.request_params)
         with self.assertRaises(ValueError):
             request.data = []
 
@@ -496,16 +497,21 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
     """ Test JSONRPCBatchRequest functionality."""
 
     def test_batch_request(self):
-        request = JSONRPCBatchRequest([
-            JSONRPCRequest("devide", {"num": 1, "denom": 2}, _id=1),
-            JSONRPCRequest("devide", {"num": 3, "denom": 2}, _id=2)
+        request = JSONRPCBatchRequest(data=[
+            JSONRPCSingleRequest(
+                data={"method": "devide", "params": {"num": 1, "denom": 2}, "id": 1, "jsonrpc": "2.0"}
+            ),
+            JSONRPCSingleRequest(
+                data={
+                    "method": "devide", "params": {"num": 3, "denom": 2}, "id": 2, "jsonrpc": "2.0"}
+            ),
         ])
         self.assertEqual(json.loads(request.json), [
-            {"method": "devide", "params": {"num": 1, "denom": 2}, "id": 1,
-             "jsonrpc": "2.0"},
-            {"method": "devide", "params": {"num": 3, "denom": 2}, "id": 2,
-             "jsonrpc": "2.0"},
+            {"method": "devide", "params": {"num": 1, "denom": 2}, "id": 1, "jsonrpc": "2.0"},
+            {"method": "devide", "params": {"num": 3, "denom": 2}, "id": 2, "jsonrpc": "2.0"},
         ])
+        self.assertTrue(request)
+        self.assertTrue(all(request))
 
     def test_from_json_batch(self):
         str_json = json.dumps([
@@ -516,7 +522,7 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
         requests = JSONRPCBatchRequest(str_json)
         self.assertTrue(isinstance(requests, JSONRPCBatchRequest))
         for r in requests:
-            self.assertTrue(isinstance(r, JSONRPCRequest))
+            self.assertTrue(isinstance(r, JSONRPCSingleRequest))
             self.assertTrue(r.method in ["add", "mul"])
             self.assertEqual(r.params, [1, 2])
             self.assertEqual(r._id, None)
@@ -527,12 +533,12 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
             {"method": "add", "params": [1, 2], "jsonrpc": "2.0", "id": None},
         ])
 
-        requests = JSONRPCRequest(json=str_json)
+        requests = JSONRPCSingleRequest(json=str_json)
         self.assertTrue(isinstance(requests, JSONRPCBatchRequest))
         requests = list(requests)
         self.assertEqual(len(requests), 1)
         r = requests[0]
-        self.assertTrue(isinstance(r, JSONRPCRequest))
+        self.assertTrue(isinstance(r, JSONRPCSingleRequest))
         self.assertEqual(r.method, "add")
         self.assertEqual(r.params, [1, 2])
         self.assertEqual(r._id, None)
@@ -540,11 +546,11 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
 
     def test_response_iterator(self):
         requests = JSONRPCBatchRequest([
-            JSONRPCRequest("devide", {"num": 1, "denom": 2}, _id=1),
-            JSONRPCRequest("devide", {"num": 3, "denom": 2}, _id=2),
+            JSONRPCSingleRequest("devide", {"num": 1, "denom": 2}, _id=1),
+            JSONRPCSingleRequest("devide", {"num": 3, "denom": 2}, _id=2),
         ])
         for request in requests:
-            self.assertTrue(isinstance(request, JSONRPCRequest))
+            self.assertTrue(isinstance(request, JSONRPCSingleRequest))
             self.assertEqual(request.method, "devide")
 
 

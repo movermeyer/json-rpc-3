@@ -1,7 +1,5 @@
 """ Utility functions for package."""
-from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta, tzinfo
-import json
 from jsonrpc.exceptions import JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCServerError
 from jsonrpc.response import JSONRPCSingleResponse
 
@@ -22,22 +20,14 @@ class FixedOffset(tzinfo):
         return timedelta(0)
 
 
-def json_datetime_default(dt):
+def json_datetime_default(d):
     """ Encoder for datetime objects.
     Usage: json.dumps(object, cls=DatetimeEncoder)
     """
-    if isinstance(dt, datetime):
-        dt_dct = {"__datetime__": [
-            dt.year,
-            dt.month,
-            dt.day,
-            dt.hour,
-            dt.minute,
-            dt.second,
-            dt.microsecond
-        ]}
-        if dt.tzinfo is not None:
-            dt_dct["__tzshift__"] = dt.utcoffset().seconds
+    if isinstance(d, datetime):
+        dt_dct = {"__datetime__": [d.year, d.month, d.day, d.hour, d.minute, d.second, d.microsecond]}
+        if d.tzinfo is not None:
+            dt_dct["__tzshift__"] = d.utcoffset().seconds
         return dt_dct
     raise TypeError
 
@@ -61,20 +51,24 @@ def json_datetime_hook(dictionary):
 
 
 def process_single_request(request, dispatcher):
+    """
+    :type request: JSONRPCSingleRequest
+    :type dispatcher: Dispatcher
+    :rtype: JSONRPCSingleResponse or None
+    """
+    output = None
     try:
         method = dispatcher[request.method]
         result = method(*request.args, **request.kwargs)
     except KeyError:
-        output = JSONRPCMethodNotFound().as_response(_id=request.id)
+        output = JSONRPCMethodNotFound().as_response(id=request.id)
     except TypeError:
-        output = JSONRPCInvalidParams().as_response(_id=request.id)
+        output = JSONRPCInvalidParams().as_response(id=request.id)
     except Exception as e:
         data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
-        output = JSONRPCServerError(data=data).as_response(_id=request.id)
+        output = JSONRPCServerError(data=data).as_response(id=request.id)
     else:
         output = JSONRPCSingleResponse(request=request, result=result)
     finally:
         if not request.is_notification:
             return output
-
-
