@@ -23,7 +23,7 @@ setup(
     description="Pure Python 3 JSON-RPC 2.0 transport realisation",
     long_description=read('README.rst'),
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
