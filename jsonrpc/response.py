@@ -1,6 +1,6 @@
 ﻿""" JSON-RPC response wrappers """
 import json
-from jsonrpc.base import JSONRPCError
+from jsonrpc.base import JSONRPCError, JSONSerializable
 
 
 class JSONRPCSingleResponse:
@@ -97,15 +97,15 @@ class JSONRPCSingleResponse:
         return serialize(self.data)  # Use serializer from request object
 
 
-class JSONRPCBatchResponse:
-    def __init__(self, responses=None, serialize=None):
+class JSONRPCBatchResponse(JSONSerializable):
+    def __init__(self, responses=None, serialize_hook=None):
         """
         :param responses: List of JSONRPCSingleResponse objects
         :type responses: list(JSONRPCSingleResponse)
         :param serialize: serializer json.dumps() by default
         """
+        super().__init__(serialize_hook=serialize_hook)
         self.responses = responses
-        self.serialize = serialize
 
     @property
     def data(self):

@@ -23,7 +23,7 @@ class TestJSONRPCResponseManager(unittest.TestCase):
         self.manager = JSONRPCResponseManager()
 
     def test_returned_type_response(self):
-        request = JSONRPCSingleRequest(data={'method': 'add', 'params': [[]], 'id': 0})
+        request = JSONRPCSingleRequest(request={'method': 'add', 'params': [[]], 'id': 0})
         response = self.manager.handle(request.json, self.dispatcher)
         self.assertTrue(isinstance(response, JSONRPCSingleResponse))
 
