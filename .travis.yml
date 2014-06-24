@@ -13,7 +13,7 @@ branches:
 install: pip install --quiet flake8 nose mock
 
 script:
-  - flake8 --ignore=E501,E910,F401 --max-complexity 12 jsonrpc
+  - flake8 --ignore=E501,E910,F401 --max-complexity 14 jsonrpc
   - nosetests
 
 after_script:

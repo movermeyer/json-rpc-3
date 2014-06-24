@@ -25,14 +25,14 @@ class TestJSONRPCExamples(unittest.TestCase):
         }
 
     def test_rpc_call_with_positional_parameters(self):
-        req = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'  # noqa
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}'
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
             '{"jsonrpc": "2.0", "result": 19, "id": 1}'
         ))
 
-        req = '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}'  # noqa
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}'
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
@@ -49,14 +49,14 @@ class TestJSONRPCExamples(unittest.TestCase):
             "get_data": lambda: ["hello", 5],
         }
 
-        req = '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}'  # noqa
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}'
         response = self.manager.handle(req, dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
             '{"jsonrpc": "2.0", "result": 19, "id": 3}'
         ))
 
-        req = '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}'  # noqa
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}'
         response = self.manager.handle(req, dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
@@ -64,7 +64,8 @@ class TestJSONRPCExamples(unittest.TestCase):
         ))
 
     def test_notification(self):
-        req = '{"jsonrpc": "2.0", "method": "update", "params": [1,2,3,4,5]}'
+        req = '{"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 10, "subtrahend": 4}}'
+
         response = self.manager.handle(req, self.dispatcher)
         self.assertEqual(response, None)
 
@@ -77,7 +78,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "1"}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": null}'
         ))
 
     def test_rpc_call_with_invalid_json(self):
@@ -85,7 +86,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}'
         ))
 
     def test_rpc_call_with_invalid_request_object(self):
@@ -93,7 +94,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}'
         ))
 
     def test_rpc_call_batch_invalid_json(self):
@@ -104,7 +105,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": null}'
         ))
 
     def test_rpc_call_with_an_empty_array(self):
@@ -112,7 +113,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}'
         ))
 
     def test_rpc_call_with_rpc_call_with_an_invalid_batch_but_not_empty(self):
@@ -120,7 +121,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}, "id": null}'
         ))
 
     def test_rpc_call_with_invalid_batch(self):

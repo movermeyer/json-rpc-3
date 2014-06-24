@@ -33,10 +33,26 @@ jsonrpc Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`jsonrpc` Module
+:mod:`errors` Module
+------------------------
+
+.. automodule:: jsonrpc.errors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`request` Module
 ---------------------
 
-.. automodule:: jsonrpc.jsonrpc
+.. automodule:: jsonrpc.request
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`response` Module
+---------------------
+
+.. automodule:: jsonrpc.response
     :members:
     :undoc-members:
     :show-inheritance:

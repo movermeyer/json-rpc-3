@@ -1,4 +1,4 @@
-from ..dispatcher import Dispatcher
+from jsonrpc.dispatcher import Dispatcher
 import unittest
 
 

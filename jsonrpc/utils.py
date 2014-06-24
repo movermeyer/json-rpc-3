@@ -1,7 +1,5 @@
 """ Utility functions for package."""
-from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta, tzinfo
-import json
 
 
 class FixedOffset(tzinfo):
@@ -20,42 +18,14 @@ class FixedOffset(tzinfo):
         return timedelta(0)
 
 
-class JSONSerializable(metaclass=ABCMeta):
-    """ Common functionality for json serializable objects."""
-
-    serialize = staticmethod(json.dumps)
-    deserialize = staticmethod(json.loads)
-
-    @abstractmethod
-    def json(self):
-        raise NotImplemented
-
-    @classmethod
-    def from_json(cls, json_str):
-        data = cls.deserialize(json_str)
-
-        if not isinstance(data, dict):
-            raise ValueError("data should be dict")
-
-        return cls(**data)
-
-
-def json_datetime_default(dt):
+def json_datetime_default(d):
     """ Encoder for datetime objects.
     Usage: json.dumps(object, cls=DatetimeEncoder)
     """
-    if isinstance(dt, datetime):
-        dt_dct = {"__datetime__": [
-            dt.year,
-            dt.month,
-            dt.day,
-            dt.hour,
-            dt.minute,
-            dt.second,
-            dt.microsecond
-        ]}
-        if dt.tzinfo is not None:
-            dt_dct["__tzshift__"] = dt.utcoffset().seconds
+    if isinstance(d, datetime):
+        dt_dct = {"__datetime__": [d.year, d.month, d.day, d.hour, d.minute, d.second, d.microsecond]}
+        if d.tzinfo is not None:
+            dt_dct["__tzshift__"] = d.utcoffset().seconds
         return dt_dct
     raise TypeError
 

@@ -1,3 +1,10 @@
+2014-06-24 orhideous@gmail.com
+
+    * Heavily rewritten core
+    * Redesigned and refactor your application architecture
+    * Changed signature internal methods for a more strict adherence to standards
+    * Fixed tests
+
 2014-06-17 orhideous@gmail.com
 
     * Drop Python 2.x support
@@ -19,7 +26,7 @@
 	* Add dispatcher for functions.
 	* Add notification support (separate notification and id=null for
 	JSON-RPC 2.0 request).
-	* Add custom json serializer (based on json) with datetime.Datetime
+	* Add custom json serialize (based on json) with datetime.Datetime
 	and decimal.Decimal serialization support.
 	* Move JSONRPC* classes to JSONRPC20*, as far as there is JSONRPC10*.
 	* Add dispatcher and JSONPRCManager to jsonrpc/__init__, they are no

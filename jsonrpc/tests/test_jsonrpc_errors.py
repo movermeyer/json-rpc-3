@@ -1,8 +1,7 @@
 import json
 import unittest
-
-from ..exceptions import (
-    JSONRPCError,
+from jsonrpc.response import JSONRPCError
+from jsonrpc.errors import (
     JSONRPCInternalError,
     JSONRPCInvalidParams,
     JSONRPCInvalidRequest,
@@ -24,7 +23,7 @@ class TestJSONRPCError(unittest.TestCase):
         JSONRPCError(**self.error_params)
 
     def test_validation_incorrect_no_parameters(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             JSONRPCError()
 
     def test_code_validation_int(self):
@@ -33,7 +32,7 @@ class TestJSONRPCError(unittest.TestCase):
 
     def test_code_validation_no_code(self):
         del self.error_params["code"]
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             JSONRPCError(**self.error_params)
 
     def test_code_validation_str(self):
@@ -47,7 +46,7 @@ class TestJSONRPCError(unittest.TestCase):
 
     def test_message_validation_none(self):
         del self.error_params["message"]
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             JSONRPCError(**self.error_params)
 
     def test_message_validation_int(self):
@@ -73,26 +72,13 @@ class TestJSONRPCError(unittest.TestCase):
             self.error_params,
         )
 
-    def test_from_json(self):
-        str_json = json.dumps({
-            "code": 0,
-            "message": "",
-            "data": {},
-        })
-
-        request = JSONRPCError.from_json(str_json)
-        self.assertTrue(isinstance(request, JSONRPCError))
-        self.assertEqual(request.code, 0)
-        self.assertEqual(request.message, "")
-        self.assertEqual(request.data, {})
-
 
 class TestJSONRPCParseError(unittest.TestCase):
     def test_code_message(self):
         error = JSONRPCParseError()
         self.assertEqual(error.code, -32700)
         self.assertEqual(error.message, "Parse error")
-        self.assertEqual(error.data, None)
+        self.assertIsNone(error.data)
 
 
 class TestJSONRPCServerError(unittest.TestCase):
@@ -100,7 +86,7 @@ class TestJSONRPCServerError(unittest.TestCase):
         error = JSONRPCServerError()
         self.assertEqual(error.code, -32000)
         self.assertEqual(error.message, "Server error")
-        self.assertEqual(error.data, None)
+        self.assertIsNone(error.data)
 
 
 class TestJSONRPCInternalError(unittest.TestCase):
@@ -108,7 +94,7 @@ class TestJSONRPCInternalError(unittest.TestCase):
         error = JSONRPCInternalError()
         self.assertEqual(error.code, -32603)
         self.assertEqual(error.message, "Internal error")
-        self.assertEqual(error.data, None)
+        self.assertIsNone(error.data)
 
 
 class TestJSONRPCInvalidParams(unittest.TestCase):
@@ -116,7 +102,7 @@ class TestJSONRPCInvalidParams(unittest.TestCase):
         error = JSONRPCInvalidParams()
         self.assertEqual(error.code, -32602)
         self.assertEqual(error.message, "Invalid params")
-        self.assertEqual(error.data, None)
+        self.assertIsNone(error.data)
 
 
 class TestJSONRPCInvalidRequest(unittest.TestCase):
@@ -124,7 +110,7 @@ class TestJSONRPCInvalidRequest(unittest.TestCase):
         error = JSONRPCInvalidRequest()
         self.assertEqual(error.code, -32600)
         self.assertEqual(error.message, "Invalid Request")
-        self.assertEqual(error.data, None)
+        self.assertIsNone(error.data)
 
 
 class TestJSONRPCMethodNotFound(unittest.TestCase):
@@ -132,4 +118,4 @@ class TestJSONRPCMethodNotFound(unittest.TestCase):
         error = JSONRPCMethodNotFound()
         self.assertEqual(error.code, -32601)
         self.assertEqual(error.message, "Method not found")
-        self.assertEqual(error.data, None)
+        self.assertIsNone(error.data)
