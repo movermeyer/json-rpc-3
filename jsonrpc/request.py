@@ -110,7 +110,7 @@ class JSONRPCSingleRequest(JSONRPCBaseRequest):
     def _validate(self, raw_data):
         """ Validates request data
         :param raw_data: request
-        :type raw_data: str | dict
+        :type raw_data: str or dict
         :return: Cleaned data
         :rtype: dict
         :raise JSONRPCInvalidRequestException:
