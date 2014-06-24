@@ -73,7 +73,10 @@ class JSONRPCSingleResponse(JSONSerializable):
 
     def __init__(self, payload, request=None, error=None, serialize_hook=None, deserialize_hook=None):
         """
-        :param error: This member is REQUIRED on error.
+        :param request: Bound request for response
+        :type request: JSONRPCSingleRequest
+        :param payload: Result or error dict
+        :param error: Error Flag
         :type error: bool
         """
         super().__init__(serialize_hook=serialize_hook, deserialize_hook=deserialize_hook)

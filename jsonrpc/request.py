@@ -6,10 +6,18 @@ from jsonrpc.errors import JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCS
 
 
 class JSONRPCBaseRequest(JSONSerializable):
+    """ Base wrapper class for JSON-RPC requests
+    :param _data: Dictionary with internal data
+    :type _data: dict
+    :param _valid_flag: Internal flag. True, if request is valid. Used by __bool__()
+    :type _valid_flag: bool
+    """
+
     _data = None
     _valid_flag = False
 
     def __init__(self, request, serialize_hook=None, deserialize_hook=None):
+        """ Initialize request and validate input data"""
         super().__init__(serialize_hook=serialize_hook, deserialize_hook=deserialize_hook)
         self._data = self._validate(request)
 
@@ -21,29 +29,42 @@ class JSONRPCBaseRequest(JSONSerializable):
 
 
 class JSONRPCSingleRequest(JSONRPCBaseRequest):
-    """A rpc call is represented by sending a Request object to a Server."""
+    """ Main object wrapper for JSON-RPC request """
 
     result = None
     _data = {}
-    _notification_flag = False
+    _notification_flag = None
 
     REQUIRED_FIELDS = {"jsonrpc", "method"}
     POSSIBLE_FIELDS = {"jsonrpc", "method", "params", "id"}
 
     @property
     def args(self):
+        """ Request args
+        :rtype: tuple
+        """
         return tuple(self.params) if isinstance(self.params, (list, tuple)) else ()
 
     @property
     def kwargs(self):
+        """ Request kwargs
+        :rtype: dict
+        """
         return self.params if isinstance(self.params, dict) else {}
 
     @property
     def json(self):
+        """ Serialized request, ready for sending
+        :return: JSON-RPC request
+        :rtype: str
+        """
         return self.serialize(self.data)
 
     @property
     def data(self):
+        """ Deserialized request
+        :rtype: dict
+        """
         data = {'jsonrpc': '2.0', 'method': self.method}
         if self.params is not None:
             data['params'] = self.params
@@ -53,30 +74,49 @@ class JSONRPCSingleRequest(JSONRPCBaseRequest):
 
     @data.setter
     def data(self, value):
+        """ Set new data for request object (replaces old)
+        :type value: dict
+        """
         self._data = self._validate(value)
 
     @property
     def method(self):
+        """ Request method name
+        :rtype: str
+        """
         return self._data.get('method')
 
     @property
     def params(self):
+        """ Request params
+        :rtype: tuple or dict or None
+        """
         return self._data.get('params')
 
     @property
     def id(self):
+        """ Request ID
+        :rtype: str or int
+        """
         return self._data.get('id')
 
     @property
     def is_notification(self):
+        """ Notification flag. If Request object is notification, server never sends reply.
+        If self.id is not set, flag sets automatically
+        :rtype: bool
+        """
         return 'id' not in self._data or self._notification_flag
 
     @is_notification.setter
     def is_notification(self, value):
+        """ Set notification flag
+        :type value: bool
+        """
         self._notification_flag = bool(value)
 
     def process(self, dispatcher):
-        """ Process request with method from dispatcher registry
+        """ Process request with method taken from dispatcher registry
         :type dispatcher: Dispatcher
         :rtype: JSONRPCSingleResponse or None
         """
@@ -156,12 +196,13 @@ class JSONRPCSingleRequest(JSONRPCBaseRequest):
                 .format(type(data['params']))
             )
 
+        self._notification_flag = False if 'id' not in data else True
         self._valid_flag = True
         return data
 
 
 class JSONRPCBatchRequest(JSONRPCBaseRequest):
-    """ Batch JSON-RPC 2.0 Request. """
+    """ Batch list of JSON-RPC 2.0 Request """
 
     _data = []
 
