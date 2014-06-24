@@ -5,7 +5,7 @@ from jsonrpc.exceptions import JSONRPCParseException, JSONRPCMultipleRequestExce
 from jsonrpc.errors import JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCServerError
 
 
-class JSONRPCAbstractRequest(JSONSerializable):
+class JSONRPCBaseRequest(JSONSerializable):
     _data = None
     _valid_flag = False
 
@@ -19,11 +19,8 @@ class JSONRPCAbstractRequest(JSONSerializable):
     def __bool__(self):
         return self._valid_flag
 
-    def _validate(self, raw_data):
-        raise NotImplemented
 
-
-class JSONRPCSingleRequest(JSONRPCAbstractRequest):
+class JSONRPCSingleRequest(JSONRPCBaseRequest):
     """A rpc call is represented by sending a Request object to a Server."""
 
     result = None
@@ -163,7 +160,7 @@ class JSONRPCSingleRequest(JSONRPCAbstractRequest):
         return data
 
 
-class JSONRPCBatchRequest(JSONRPCAbstractRequest):
+class JSONRPCBatchRequest(JSONRPCBaseRequest):
     """ Batch JSON-RPC 2.0 Request. """
 
     _data = []

@@ -45,6 +45,11 @@ class TestJSONRPCResponseManager(unittest.TestCase):
         self.assertIsInstance(response, JSONRPCSingleResponse)
         self.assertEqual(response.error["message"], "Invalid Request")
         self.assertEqual(response.error["code"], -32600)
+        req = '1'
+        response = self.manager.handle(req, self.dispatcher)
+        self.assertIsInstance(response, JSONRPCSingleResponse)
+        self.assertEqual(response.error["message"], "Invalid Request")
+        self.assertEqual(response.error["code"], -32600)
 
     def test_method_not_found(self):
         request = JSONRPCSingleRequest({'jsonrpc': '2.0', 'method': 'does_not_exist', 'params': [], 'id': 0})

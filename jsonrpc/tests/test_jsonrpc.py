@@ -1,9 +1,12 @@
 import json
 import unittest
 from copy import deepcopy
-from jsonrpc.exceptions import JSONRPCInvalidRequestException, JSONRPCParseException, JSONRPCMultipleRequestException
+
+from jsonrpc.exceptions import JSONRPCInvalidRequestException, JSONRPCParseException, JSONRPCMultipleRequestException, \
+    JSONRPCException
 from jsonrpc.request import JSONRPCSingleRequest, JSONRPCBatchRequest
 from jsonrpc.response import JSONRPCSingleResponse, JSONRPCBatchResponse
+from jsonrpc.tests.test_examples import isjsonequal
 
 
 class TestJSONRPCSingleRequest(unittest.TestCase):
@@ -24,6 +27,10 @@ class TestJSONRPCSingleRequest(unittest.TestCase):
     def test_validation_incorrect_no_parameters(self):
         with self.assertRaises(TypeError):
             JSONRPCSingleRequest()
+
+    def test_version_validation(self):
+        with self.assertRaises(JSONRPCInvalidRequestException):
+            JSONRPCSingleRequest({"jsonrpc": "3.0", "method": "add"})
 
     def test_method_validation_str(self):
         self.request_params.update({"method": "add"})
@@ -130,6 +137,27 @@ class TestJSONRPCSingleRequest(unittest.TestCase):
         with self.assertRaises(JSONRPCInvalidRequestException):
             JSONRPCSingleRequest(self.request_params)
 
+    def test_incorrect_multiple_json(self):
+        lst = [
+            {"method": "devide", "params": {"num": 1, "denom": 2}, "id": 1, "jsonrpc": "2.0"},
+            {"method": "devide", "params": {"num": 3, "denom": 2}, "id": 2, "jsonrpc": "2.0"}
+        ]
+
+        with self.assertRaises(JSONRPCMultipleRequestException):
+            JSONRPCSingleRequest(json.dumps(lst))
+
+        with self.assertRaises(JSONRPCMultipleRequestException):
+            JSONRPCSingleRequest(lst)
+
+    def test_incorrect_empty_request(self):
+        request = {}
+
+        with self.assertRaises(JSONRPCInvalidRequestException):
+            JSONRPCSingleRequest(json.dumps(request))
+
+        with self.assertRaises(JSONRPCInvalidRequestException):
+            JSONRPCSingleRequest(request)
+
     def test_data_method_1(self):
         r = JSONRPCSingleRequest({"jsonrpc": "2.0", "method": "add"})
         self.assertEqual(r.data, {
@@ -224,7 +252,6 @@ class TestJSONRPCSingleRequest(unittest.TestCase):
             "method": "add",
             "id": "id",
         })
-
 
     def test_is_notification(self):
         r = JSONRPCSingleRequest({"jsonrpc": "2.0", "method": "add"})
@@ -387,7 +414,6 @@ class TestJSONRPCSingleRequest(unittest.TestCase):
         self.assertEqual(request.id, None)
         self.assertTrue(request.is_notification)
 
-
     def test_from_json_request(self):
         str_json = json.dumps({
             "method": "add",
@@ -506,6 +532,10 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
             self.assertIsInstance(batch, JSONRPCBatchRequest)
             self.assertEqual(request.method, "devide")
 
+    def test_incorrect_batch_request(self):
+        with self.assertRaises(JSONRPCInvalidRequestException):
+            JSONRPCBatchRequest(1.3)
+
 
 class TestJSONRPCSingleResponse(unittest.TestCase):
     """ Test JSONRPCSingleResponse functionality."""
@@ -549,6 +579,10 @@ class TestJSONRPCSingleResponse(unittest.TestCase):
         with self.assertRaises(ValueError):
             JSONRPCSingleResponse(d, error=True)
 
+    def test_validation_error_payload_type(self):
+        with self.assertRaises(TypeError):
+            JSONRPCSingleResponse(None, error=True)
+
     def test_validation_error_incorrect_message_not_str(self):
         d = deepcopy(self.error_data)
         d.update({"message": 0})
@@ -580,6 +614,7 @@ class TestJSONRPCSingleResponse(unittest.TestCase):
             "id": None,
         })
 
+
 class TestJSONRPCBatchResponse(unittest.TestCase):
     """ Test JSONRPCBatchResponse functionality."""
 
@@ -592,6 +627,33 @@ class TestJSONRPCBatchResponse(unittest.TestCase):
             {"result": "pong", "id": 1, "jsonrpc": "2.0"},
             {"error": {"code": 0, "message": ""}, "id": None, "jsonrpc": "2.0"},
         ])
+
+    def test_batch_response_from_single(self):
+        request = JSONRPCSingleRequest({"method": "ping", "jsonrpc": "2.0", "id": 1})
+        result = "pong"
+        response = JSONRPCSingleResponse(result, request=request)
+
+        batch_with_list = JSONRPCBatchResponse([response])
+        batch_without_list = JSONRPCBatchResponse(response)
+
+        self.assertTrue(isjsonequal(batch_with_list.json, batch_without_list.json))
+
+        iter(batch_with_list)
+        iter(batch_without_list)
+        iter(response)
+
+        self.assertEqual(len(batch_with_list), 1)
+        self.assertEqual(len(batch_without_list), 1)
+        self.assertTrue(isjsonequal(response.json, batch_with_list[0].json))
+        self.assertTrue(isjsonequal(response.json, batch_without_list[0].json))
+
+    def test_incorrect_constructor(self):
+        with self.assertRaises(TypeError):
+            JSONRPCBatchResponse(1)
+        with self.assertRaises(TypeError):
+            JSONRPCBatchResponse([1, 2])
+        with self.assertRaises(JSONRPCException):
+            JSONRPCBatchResponse(None)
 
     def test_response_iterator(self):
         request_1 = JSONRPCSingleRequest({"method": "add", "params": [1, 2], "jsonrpc": "2.0", "id": 1})

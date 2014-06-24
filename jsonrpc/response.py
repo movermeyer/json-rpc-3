@@ -83,7 +83,7 @@ class JSONRPCSingleResponse(JSONSerializable):
         else:
             if not isinstance(payload, dict):
                 raise TypeError("Error payload should be dict, not {0}".format(type(payload)))
-            if not 'code' in payload or not 'message' in payload:
+            if 'code' not in payload or 'message' not in payload:
                 raise ValueError("Can't find code and/or message in payload")
             if not isinstance(payload['code'], int):
                 raise ValueError("Error code should be integer")
@@ -154,12 +154,12 @@ class JSONRPCBatchResponse(JSONSerializable):
                 if isinstance(item, JSONRPCSingleResponse):
                     data.append(item)
                 else:
-                    raise JSONRPCException(
+                    raise TypeError(
                         "Response item must be JSONRPCSingleResponse instance, not {0}"
                         .format(type(raw_data))
                     )
         else:
-            raise JSONRPCException(
+            raise TypeError(
                 "Responses must be list, tuple or JSONRPCSingleResponse, not {0}"
                 .format(type(raw_data))
             )
