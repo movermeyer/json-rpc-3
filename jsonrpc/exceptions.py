@@ -28,8 +28,8 @@ class JSONRPCParseError(JSONRPCError):
     An error occurred on the server while parsing the JSON text.
     """
 
-    CODE = -32700
-    MESSAGE = "Parse error"
+    def __init__(self, **kwargs):
+        super().__init__(-32700, "Parse error", **kwargs)
 
 
 class JSONRPCInvalidRequest(JSONRPCError):
@@ -38,8 +38,8 @@ class JSONRPCInvalidRequest(JSONRPCError):
     The JSON sent is not a valid Request object.
     """
 
-    CODE = -32600
-    MESSAGE = "Invalid Request"
+    def __init__(self, **kwargs):
+        super().__init__(-32600, "Invalid Request", **kwargs)
 
 
 class JSONRPCMethodNotFound(JSONRPCError):
@@ -48,8 +48,8 @@ class JSONRPCMethodNotFound(JSONRPCError):
     The method does not exist / is not available.
     """
 
-    CODE = -32601
-    MESSAGE = "Method not found"
+    def __init__(self, **kwargs):
+        super().__init__(-32601, "Method not found", **kwargs)
 
 
 class JSONRPCInvalidParams(JSONRPCError):
@@ -58,8 +58,8 @@ class JSONRPCInvalidParams(JSONRPCError):
     Invalid method parameter(s).
     """
 
-    CODE = -32602
-    MESSAGE = "Invalid params"
+    def __init__(self, **kwargs):
+        super().__init__(-32602, "Invalid params", **kwargs)
 
 
 class JSONRPCInternalError(JSONRPCError):
@@ -68,8 +68,8 @@ class JSONRPCInternalError(JSONRPCError):
     Internal JSON-RPC error.
     """
 
-    CODE = -32603
-    MESSAGE = "Internal error"
+    def __init__(self, **kwargs):
+        super().__init__(-32603, "Internal error", **kwargs)
 
 
 class JSONRPCServerError(JSONRPCError):
@@ -78,5 +78,5 @@ class JSONRPCServerError(JSONRPCError):
     Reserved for implementation-defined server-errors.
     """
 
-    CODE = -32000
-    MESSAGE = "Server error"
+    def __init__(self, **kwargs):
+        super().__init__(-32000, "Server error", **kwargs)

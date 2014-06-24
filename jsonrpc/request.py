@@ -89,19 +89,17 @@ class JSONRPCSingleRequest(JSONRPCAbstractRequest):
             method = dispatcher[self.method]
             result = method(*self.args, **self.kwargs)
         except KeyError:
-            output = JSONRPCMethodNotFound().as_response(id=self.id)
+            output = JSONRPCMethodNotFound().as_response()
         except TypeError:
-            output = JSONRPCInvalidParams().as_response(id=self.id)
+            output = JSONRPCInvalidParams().as_response()
         except Exception as e:
             data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
-            output = JSONRPCServerError(data=data).as_response(id=self.id)
+            output = JSONRPCServerError(data=data).as_response()
         else:
             output = JSONRPCSingleResponse(request=self, result=result)
         finally:
             if not self.is_notification:
                 return output
-
-
 
     def _parse(self, string):
         try:

@@ -78,7 +78,7 @@ class TestJSONRPCExamples(unittest.TestCase):
         response = self.manager.handle(req, self.dispatcher)
         self.assertTrue(isjsonequal(
             response.json,
-            '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": "1"}'  # noqa
+            '{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": null}'  # noqa
         ))
 
     def test_rpc_call_with_invalid_json(self):
