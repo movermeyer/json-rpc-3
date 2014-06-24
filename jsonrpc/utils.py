@@ -48,27 +48,3 @@ def json_datetime_hook(dictionary):
         dt = dt.replace(tzinfo=FixedOffset(dictionary["__tzshift__"]))
 
     return dt
-
-
-def process_single_request(request, dispatcher):
-    """
-    :type request: JSONRPCSingleRequest
-    :type dispatcher: Dispatcher
-    :rtype: JSONRPCSingleResponse or None
-    """
-    output = None
-    try:
-        method = dispatcher[request.method]
-        result = method(*request.args, **request.kwargs)
-    except KeyError:
-        output = JSONRPCMethodNotFound().as_response(id=request.id)
-    except TypeError:
-        output = JSONRPCInvalidParams().as_response(id=request.id)
-    except Exception as e:
-        data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
-        output = JSONRPCServerError(data=data).as_response(id=request.id)
-    else:
-        output = JSONRPCSingleResponse(request=request, result=result)
-    finally:
-        if not request.is_notification:
-            return output

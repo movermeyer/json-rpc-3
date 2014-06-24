@@ -1,10 +1,8 @@
 """ JSON-RPC request wrappers """
-from abc import abstractmethod
-
 from jsonrpc.base import JSONSerializable
-from jsonrpc.response import JSONRPCBatchResponse
-from jsonrpc.utils import process_single_request
-from jsonrpc.exceptions import JSONRPCParseException, JSONRPCMultipleRequestException, JSONRPCInvalidRequestException
+from jsonrpc.response import JSONRPCBatchResponse, JSONRPCSingleResponse
+from jsonrpc.exceptions import JSONRPCParseException, JSONRPCMultipleRequestException, JSONRPCInvalidRequestException, \
+    JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCServerError
 
 
 class JSONRPCAbstractRequest(JSONSerializable):
@@ -21,7 +19,6 @@ class JSONRPCAbstractRequest(JSONSerializable):
     def __bool__(self):
         return self._valid_flag
 
-    @abstractmethod
     def _validate(self, raw_data):
         raise NotImplemented
 
@@ -83,7 +80,28 @@ class JSONRPCSingleRequest(JSONRPCAbstractRequest):
         self._notification_flag = bool(value)
 
     def process(self, dispatcher):
-        return process_single_request(self, dispatcher)
+        """ Process request with method from dispatcher registry
+        :type dispatcher: Dispatcher
+        :rtype: JSONRPCSingleResponse or None
+        """
+        output = None
+        try:
+            method = dispatcher[self.method]
+            result = method(*self.args, **self.kwargs)
+        except KeyError:
+            output = JSONRPCMethodNotFound().as_response(id=self.id)
+        except TypeError:
+            output = JSONRPCInvalidParams().as_response(id=self.id)
+        except Exception as e:
+            data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
+            output = JSONRPCServerError(data=data).as_response(id=self.id)
+        else:
+            output = JSONRPCSingleResponse(request=self, result=result)
+        finally:
+            if not self.is_notification:
+                return output
+
+
 
     def _parse(self, string):
         try:
@@ -167,7 +185,7 @@ class JSONRPCBatchRequest(JSONRPCAbstractRequest):
         return self.serialize([request.data for request in self])
 
     def process(self, dispatcher):
-        responses = list(filter(None, [process_single_request(request, dispatcher) for request in self]))
+        responses = list(filter(None, [request.process(dispatcher) for request in self]))
         if responses:
             return JSONRPCBatchResponse(responses=responses, serialize_hook=self.serialize_hook)
 

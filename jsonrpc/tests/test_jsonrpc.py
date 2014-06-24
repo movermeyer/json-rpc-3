@@ -564,18 +564,18 @@ class TestJSONRPCSingleResponse(unittest.TestCase):
 
     def test_validation_id(self):
         response = JSONRPCSingleResponse(**self.response_success_params)
-        self.assertEqual(response._id, self.response_success_params["id"])
+        self.assertEqual(response.id, self.response_success_params["id"])
 
     def test_validation_id_incorrect_type(self):
         response = JSONRPCSingleResponse(**self.response_success_params)
 
-        with self.assertRaises(JSONRPCInvalidRequestException):
+        with self.assertRaises(ValueError):
             response.id = []
 
-        with self.assertRaises(JSONRPCInvalidRequestException):
+        with self.assertRaises(ValueError):
             response.id = {}
 
-        with self.assertRaises(JSONRPCInvalidRequestException):
+        with self.assertRaises(ValueError):
             response.id = 0.1
 
     def test_data_result(self):

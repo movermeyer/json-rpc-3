@@ -10,18 +10,7 @@ class TestJSONSerializable(unittest.TestCase):
     """ Test JSONSerializable functionality."""
 
     def setUp(self):
-        class A(JSONSerializable):
-            @property
-            def json(self):
-                pass
-
-        self._class = A
-
-    def test_abstract_class(self):
-        with self.assertRaises(TypeError):
-            JSONSerializable()
-
-        self._class()
+        self._class = JSONSerializable
 
     def test_definse_serialize_deserialize(self):
         """ Test classmethods of inherited class."""

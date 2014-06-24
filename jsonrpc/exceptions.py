@@ -1,4 +1,4 @@
-from jsonrpc.base import JSONRPCError
+from jsonrpc.response import JSONRPCError
 
 
 class JSONRPCException(Exception):
