@@ -196,7 +196,7 @@ class JSONRPCSingleRequest(JSONRPCBaseRequest):
                 .format(type(data['params']))
             )
 
-        self._notification_flag = False if 'id' not in data else True
+        self._notification_flag = True if 'id' not in data else False
         self._valid_flag = True
         return data
 
