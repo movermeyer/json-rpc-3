@@ -1,8 +1,8 @@
 """ JSON-RPC request wrappers """
 from jsonrpc.base import JSONSerializable
 from jsonrpc.response import JSONRPCBatchResponse, JSONRPCSingleResponse
-from jsonrpc.exceptions import JSONRPCParseException, JSONRPCMultipleRequestException, JSONRPCInvalidRequestException, \
-    JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCServerError
+from jsonrpc.exceptions import JSONRPCParseException, JSONRPCMultipleRequestException, JSONRPCInvalidRequestException
+from jsonrpc.errors import JSONRPCMethodNotFound, JSONRPCInvalidParams, JSONRPCServerError
 
 
 class JSONRPCAbstractRequest(JSONSerializable):
@@ -32,7 +32,6 @@ class JSONRPCSingleRequest(JSONRPCAbstractRequest):
 
     REQUIRED_FIELDS = {"jsonrpc", "method"}
     POSSIBLE_FIELDS = {"jsonrpc", "method", "params", "id"}
-
 
     @property
     def args(self):
@@ -96,7 +95,7 @@ class JSONRPCSingleRequest(JSONRPCAbstractRequest):
             data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
             output = JSONRPCServerError(data=data).as_response()
         else:
-            output = JSONRPCSingleResponse(request=self, result=result)
+            output = JSONRPCSingleResponse(result, request=self)
         finally:
             if not self.is_notification:
                 return output
@@ -185,7 +184,7 @@ class JSONRPCBatchRequest(JSONRPCAbstractRequest):
     def process(self, dispatcher):
         responses = list(filter(None, [request.process(dispatcher) for request in self]))
         if responses:
-            return JSONRPCBatchResponse(responses=responses, serialize_hook=self.serialize_hook)
+            return JSONRPCBatchResponse(responses, serialize_hook=self.serialize_hook)
 
     def _validate(self, raw_data):
         self._valid_flag = False
@@ -209,7 +208,10 @@ class JSONRPCBatchRequest(JSONRPCAbstractRequest):
             if isinstance(raw_data, list):
                 data = [JSONRPCSingleRequest(item) for item in data]
         else:
-            raise JSONRPCInvalidRequestException("Requests must be list, tuple or str, not {0}".format(type(raw_data)))
+            raise JSONRPCInvalidRequestException(
+                "Requests must be list, tuple, JSONRPCSingleRequest or str, not {0}"
+                .format(type(raw_data))
+            )
 
         self._valid_flag = True
         return data

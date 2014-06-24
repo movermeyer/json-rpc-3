@@ -1,6 +1,6 @@
 import json
 import unittest
-
+from copy import deepcopy
 from jsonrpc.exceptions import JSONRPCInvalidRequestException, JSONRPCParseException, JSONRPCMultipleRequestException
 from jsonrpc.request import JSONRPCSingleRequest, JSONRPCBatchRequest
 from jsonrpc.response import JSONRPCSingleResponse, JSONRPCBatchResponse
@@ -125,7 +125,7 @@ class TestJSONRPCSingleRequest(unittest.TestCase):
         self.request_params.update({"id": []})
         with self.assertRaises(JSONRPCInvalidRequestException):
             JSONRPCSingleRequest(self.request_params)
-            
+
         self.request_params.update({"id": ()})
         with self.assertRaises(JSONRPCInvalidRequestException):
             JSONRPCSingleRequest(self.request_params)
@@ -510,179 +510,101 @@ class TestJSONRPCBatchRequest(unittest.TestCase):
 class TestJSONRPCSingleResponse(unittest.TestCase):
     """ Test JSONRPCSingleResponse functionality."""
 
-    def setUp(self):
-        self.response_success_params = {
-            "result": "",
-            "id": 1,
-        }
-        self.response_error_params = {
-            "error": {
-                "code": 1,
-                "message": "error",
-            },
-            "id": 1,
-        }
+    @classmethod
+    def setUpClass(cls):
+        cls.request = JSONRPCSingleRequest({"method": "add", "params": [1, 2], "jsonrpc": "2.0", "id": 1})
+        cls.result = 3
+        cls.error_data = {"code": 1, "message": "error"}
 
     def test_correct_init(self):
         """ Test object is created."""
-        JSONRPCSingleResponse(**self.response_success_params)
+        JSONRPCSingleResponse(self.result, request=self.request)
 
     def test_validation_incorrect_no_parameters(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             JSONRPCSingleResponse()
 
     def test_validation_incorrect_result_and_error(self):
         with self.assertRaises(ValueError):
-            JSONRPCSingleResponse(result="", error={"code": 1, "message": ""})
-
-        response = JSONRPCSingleResponse(error={"code": 1, "message": ""})
-        with self.assertRaises(ValueError):
-            response.result = ""
+            JSONRPCSingleResponse(self.error_data, error=False)
 
     def test_validation_error_correct(self):
-        JSONRPCSingleResponse(**self.response_error_params)
+        JSONRPCSingleResponse(self.error_data, error=True)
 
     def test_validation_error_incorrect(self):
-        self.response_error_params["error"].update({"code": "str"})
+        d = deepcopy(self.error_data)
+        d.update({"code": "str"})
         with self.assertRaises(ValueError):
-            JSONRPCSingleResponse(**self.response_error_params)
+            JSONRPCSingleResponse(d, error=True)
 
     def test_validation_error_incorrect_no_code(self):
-        del self.response_error_params["error"]["code"]
+        d = deepcopy(self.error_data)
+        del d["code"]
         with self.assertRaises(ValueError):
-            JSONRPCSingleResponse(**self.response_error_params)
+            JSONRPCSingleResponse(d, error=True)
 
     def test_validation_error_incorrect_no_message(self):
-        del self.response_error_params["error"]["message"]
+        d = deepcopy(self.error_data)
+        del d["message"]
         with self.assertRaises(ValueError):
-            JSONRPCSingleResponse(**self.response_error_params)
+            JSONRPCSingleResponse(d, error=True)
 
     def test_validation_error_incorrect_message_not_str(self):
-        self.response_error_params["error"].update({"message": 0})
+        d = deepcopy(self.error_data)
+        d.update({"message": 0})
         with self.assertRaises(ValueError):
-            JSONRPCSingleResponse(**self.response_error_params)
+            JSONRPCSingleResponse(d, error=True)
 
     def test_validation_id(self):
-        response = JSONRPCSingleResponse(**self.response_success_params)
-        self.assertEqual(response.id, self.response_success_params["id"])
+        response = JSONRPCSingleResponse(self.result, request=self.request)
+        self.assertEqual(response.id, self.request.id)
 
-    def test_validation_id_incorrect_type(self):
-        response = JSONRPCSingleResponse(**self.response_success_params)
-
-        with self.assertRaises(ValueError):
-            response.id = []
-
-        with self.assertRaises(ValueError):
-            response.id = {}
-
-        with self.assertRaises(ValueError):
-            response.id = 0.1
-
-    def test_data_result(self):
-        r = JSONRPCSingleResponse(result="")
-        self.assertEqual(json.loads(r.json), r.data)
-        self.assertEqual(r.data, {
+    def test_container_result(self):
+        r = JSONRPCSingleResponse(self.result, self.request)
+        self.assertEqual(json.loads(r.json), r.container)
+        self.assertEqual(r.container, {
             "jsonrpc": "2.0",
-            "result": "",
-            "id": None,
+            "result": 3,
+            "id": 1,
         })
 
-    def test_data_result_id_none(self):
-        r = JSONRPCSingleResponse(result="", id=None)
-        self.assertEqual(json.loads(r.json), r.data)
-        self.assertEqual(r.data, {
-            "jsonrpc": "2.0",
-            "result": "",
-            "id": None,
-        })
-
-    def test_data_result_id(self):
-        r = JSONRPCSingleResponse(result="", id=0)
-        self.assertEqual(json.loads(r.json), r.data)
-        self.assertEqual(r.data, {
-            "jsonrpc": "2.0",
-            "result": "",
-            "id": 0,
-        })
-
-    def test_data_error(self):
-        r = JSONRPCSingleResponse(error={"code": 0, "message": ""})
-        self.assertEqual(json.loads(r.json), r.data)
-        self.assertEqual(r.data, {
+    def test_container_error(self):
+        r = JSONRPCSingleResponse(self.error_data, error=True)
+        self.assertEqual(json.loads(r.json), r.container)
+        self.assertEqual(r.container, {
             "jsonrpc": "2.0",
             "error": {
-                "code": 0,
-                "message": "",
+                "code": 1,
+                "message": "error",
             },
             "id": None,
         })
-
-    def test_data_error_id_none(self):
-        r = JSONRPCSingleResponse(error={"code": 0, "message": ""}, id=None)
-        self.assertEqual(json.loads(r.json), r.data)
-        self.assertEqual(r.data, {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": 0,
-                "message": "",
-            },
-            "id": None,
-        })
-
-    def test_data_error_id(self):
-        r = JSONRPCSingleResponse(error={"code": 0, "message": ""}, id=0)
-        self.assertEqual(json.loads(r.json), r.data)
-        self.assertEqual(r.data, {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": 0,
-                "message": "",
-            },
-            "id": 0,
-        })
-
-    def test_data_setter(self):
-        response = JSONRPCSingleResponse(**self.response_success_params)
-        with self.assertRaises(ValueError):
-            response.data = []
-
-        with self.assertRaises(ValueError):
-            response.data = ""
-
-        with self.assertRaises(ValueError):
-            response.data = None
-
 
 class TestJSONRPCBatchResponse(unittest.TestCase):
     """ Test JSONRPCBatchResponse functionality."""
 
     def test_batch_response(self):
         response = JSONRPCBatchResponse([
-            JSONRPCSingleResponse(result="result", id=1),
-            JSONRPCSingleResponse(error={"code": 0, "message": ""}, id=2),
+            JSONRPCSingleResponse("pong", request=JSONRPCSingleRequest({"method": "ping", "jsonrpc": "2.0", "id": 1})),
+            JSONRPCSingleResponse({"code": 0, "message": ""}, error=True),
         ])
         self.assertEqual(json.loads(response.json), [
-            {"result": "result", "id": 1, "jsonrpc": "2.0"},
-            {"error": {"code": 0, "message": ""}, "id": 2, "jsonrpc": "2.0"},
+            {"result": "pong", "id": 1, "jsonrpc": "2.0"},
+            {"error": {"code": 0, "message": ""}, "id": None, "jsonrpc": "2.0"},
         ])
 
     def test_response_iterator(self):
+        request_1 = JSONRPCSingleRequest({"method": "add", "params": [1, 2], "jsonrpc": "2.0", "id": 1})
+        request_2 = JSONRPCSingleRequest({"method": "mul", "params": [7, 3], "jsonrpc": "2.0", "id": 2})
+        request_3 = JSONRPCSingleRequest({"method": "ping", "jsonrpc": "2.0"})
+        result_1 = 2
+        result_2 = 21
+        result_3 = "pong"
         responses = JSONRPCBatchResponse([
-            JSONRPCSingleResponse(result="result", id=1),
-            JSONRPCSingleResponse(result="result", id=2),
+            JSONRPCSingleResponse(result_1, request=request_1),
+            JSONRPCSingleResponse(result_2, request=request_2),
+            JSONRPCSingleResponse(result_3, request=request_3)
         ])
+
         for response in responses:
             self.assertIsInstance(response, JSONRPCSingleResponse)
-            self.assertEqual(response.result, "result")
-
-    def test_batch_response_data(self):
-        response = JSONRPCBatchResponse([
-            JSONRPCSingleResponse(result="result", id=1),
-            JSONRPCSingleResponse(result="result", id=2),
-            JSONRPCSingleResponse(result="result"),
-        ])
-        self.assertEqual(response.data, [
-            {"id": 1, "jsonrpc": "2.0", "result": "result"},
-            {"id": 2, "jsonrpc": "2.0", "result": "result"},
-            {"id": None, "jsonrpc": "2.0", "result": "result"},
-        ])

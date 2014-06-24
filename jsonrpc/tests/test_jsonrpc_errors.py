@@ -1,7 +1,7 @@
 import json
 import unittest
 from jsonrpc.response import JSONRPCError
-from jsonrpc.exceptions import (
+from jsonrpc.errors import (
     JSONRPCInternalError,
     JSONRPCInvalidParams,
     JSONRPCInvalidRequest,

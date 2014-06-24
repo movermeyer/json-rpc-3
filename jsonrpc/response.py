@@ -1,6 +1,6 @@
 ﻿""" JSON-RPC response wrappers """
-
 from jsonrpc.base import JSONSerializable
+from jsonrpc.exceptions import JSONRPCException
 
 
 class JSONRPCError(JSONSerializable):
@@ -62,58 +62,106 @@ class JSONRPCError(JSONSerializable):
         return self.serialize(self._container)
 
     def as_response(self):
-        return JSONRPCSingleResponse(result=self._container, error=True)
+        return JSONRPCSingleResponse(payload=self._container, error=True)
 
 
 class JSONRPCSingleResponse(JSONSerializable):
     """ JSON-RPC response object to JSONRPCRequest. """
     _error_flag = None
+    _payload = None
+    _request = None
 
-    def __init__(self, request=None, result=None, error=None, serialize_hook=None, deserialize_hook=None):
+    def __init__(self, payload, request=None, error=None, serialize_hook=None, deserialize_hook=None):
         """
         :param error: This member is REQUIRED on error.
         :type error: bool
         """
         super().__init__(serialize_hook=serialize_hook, deserialize_hook=deserialize_hook)
+        if not error:
+            if request is None:
+                raise ValueError("Can't create non-error Response object without request object!")
+        else:
+            if not isinstance(payload, dict):
+                raise TypeError("Error payload should be dict, not {0}".format(type(payload)))
+            if not 'code' in payload or not 'message' in payload:
+                raise ValueError("Can't find code and/or message in payload")
+            if not isinstance(payload['code'], int):
+                raise ValueError("Error code should be integer")
+            if not isinstance(payload['message'], str):
+                raise ValueError("Error message should be string")
 
-        self.result = result
-        self.request = request if not error else None
-        self.error = result if error else None
-        self.id = request.id if not error else None
+        self._request = request
+        self._payload = payload
         self._error_flag = error
 
+    def __iter__(self):
+        yield self
+
     @property
-    def data(self):
+    def result(self):
+        return self._payload if not self._error_flag else None
+
+    @property
+    def error(self):
+        return self._payload if self._error_flag else None
+
+    @property
+    def id(self):
+        return self._request.id if not self._error_flag else None
+
+    @property
+    def container(self):
         data = {"jsonrpc": "2.0", "id": self.id}
         if self._error_flag:
-            data["error"] = self.result
+            data["error"] = self.error
         else:
             data["result"] = self.result
         return data
 
     @property
     def json(self):
-        return self.serialize(self.data)
+        return self.serialize(self.container)
 
 
 class JSONRPCBatchResponse(JSONSerializable):
-    def __init__(self, responses=None, serialize_hook=None):
-        """
-        :param responses: List of JSONRPCSingleResponse objects
-        :type responses: list(JSONRPCSingleResponse)
-        :param serialize: serializer json.dumps() by default
-        """
-        super().__init__(serialize_hook=serialize_hook)
-        self.responses = responses
+    _data = []
 
-    @property
-    def data(self):
-        return [r.data for r in self.responses]
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, item):
+        return self._data.__getitem__(item)
 
     @property
     def json(self):
-        return self.serialize(self.data)
+        return self.serialize([response.container for response in self])
 
-    def __iter__(self):
-        return iter(self.responses)
+    def __init__(self, response, serialize_hook=None):
+        super().__init__(serialize_hook=serialize_hook)
+        self._data = self._validate(response)
 
+    def _validate(self, raw_data):
+        self._valid_flag = False
+        data = []
+        if not raw_data:
+            raise JSONRPCException("Empty batch response data!")
+
+        if isinstance(raw_data, (list, tuple, JSONRPCSingleResponse)):
+            for item in raw_data:
+                if isinstance(item, JSONRPCSingleResponse):
+                    data.append(item)
+                else:
+                    raise JSONRPCException(
+                        "Response item must be JSONRPCSingleResponse instance, not {0}"
+                        .format(type(raw_data))
+                    )
+        else:
+            raise JSONRPCException(
+                "Responses must be list, tuple or JSONRPCSingleResponse, not {0}"
+                .format(type(raw_data))
+            )
+        self._valid_flag = True
+        return data

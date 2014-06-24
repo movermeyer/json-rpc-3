@@ -1,5 +1,5 @@
-from jsonrpc.exceptions import JSONRPCInvalidRequest, JSONRPCInvalidRequestException, \
-    JSONRPCParseError, JSONRPCParseException
+from jsonrpc.errors import JSONRPCInvalidRequest, JSONRPCParseError
+from jsonrpc.exceptions import JSONRPCInvalidRequestException, JSONRPCParseException
 from jsonrpc.request import JSONRPCSingleRequest, JSONRPCBatchRequest
 from jsonrpc.response import JSONRPCSingleResponse
 from jsonrpc.base import JSONSerializable
