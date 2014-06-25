@@ -132,7 +132,12 @@ class JSONRPCSingleRequest(JSONRPCBaseRequest):
             data = {'type': e.__class__.__name__, 'args': e.args, 'message': str(e)}
             output = JSONRPCServerError(data=data).as_response()
         else:
-            output = JSONRPCSingleResponse(result, request=self)
+            output = JSONRPCSingleResponse(
+                result,
+                request=self,
+                serialize_hook=self.serialize_hook,
+                deserialize_hook=self.deserialize_hook
+            )
         finally:
             if not self.is_notification:
                 return output
