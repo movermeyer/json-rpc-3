@@ -1,3 +1,7 @@
+2014-06-25 orhideous@gmail.com
+
+    * Fixed error with ignored serializer/deserializer hooks in dispatcher
+
 2014-06-24 orhideous@gmail.com
 
     * Heavily rewritten core
