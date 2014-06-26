@@ -19,6 +19,7 @@ class TestJSONRPCResponseManager(unittest.TestCase):
             "101_base": lambda **kwargs: int("101", **kwargs),
             "error": lambda: raise_(Exception("error_explanation")),
             "long_time_method": self.long_time_method,
+            "echo": lambda x: x,
         }
         self.manager = JSONRPCResponseManager()
 
@@ -38,6 +39,16 @@ class TestJSONRPCResponseManager(unittest.TestCase):
         self.assertIsInstance(response, JSONRPCSingleResponse)
         self.assertEqual(response.error["message"], "Parse error")
         self.assertEqual(response.error["code"], -32700)
+
+    def test_echo_request(self):
+        req = '{"jsonrpc": "2.0", "method": "echo", "params": ["foo"], "id": 1}'
+        response = self.manager.handle(req, self.dispatcher)
+        self.assertIsInstance(response, JSONRPCSingleResponse)
+        self.assertEqual(response.result, "foo")
+        req = '{"jsonrpc": "2.0", "method": "echo", "params": [["foo", "bar"]], "id": 1}'
+        response = self.manager.handle(req, self.dispatcher)
+        self.assertIsInstance(response, JSONRPCSingleResponse)
+        self.assertEqual(response.result, ["foo", "bar"])
 
     def test_invalid_request(self):
         req = '{"jsonrpc": "2.0", "method": 1, "params": "bar"}'
