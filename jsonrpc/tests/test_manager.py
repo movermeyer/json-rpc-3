@@ -84,7 +84,6 @@ class TestJSONRPCResponseManager(unittest.TestCase):
         self.assertEqual(response.error["code"], -32000)
         self.assertEqual(response.error["data"], {
             "type": "Exception",
-            "args": ('error_explanation',),
             "message": 'error_explanation',
         })
 
