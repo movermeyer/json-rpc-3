@@ -1,3 +1,7 @@
+2014-06-27 orhideous@gmail.com
+
+    * Now KeyError from dispatcher methods calls handled properly
+
 2014-06-25 orhideous@gmail.com
 
     * Fixed error with ignored serializer/deserializer hooks in dispatcher
