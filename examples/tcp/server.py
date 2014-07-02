@@ -38,7 +38,7 @@ class RequestHandler(BaseRequestHandler):
         else:
             print('{}[{:2.4f}s]{} Error: {}{}{} | Request: {}{}{}'.format(
                 Colors.BLUE, end - start, Colors.ENDC,
-                Colors.FAIL, response.error['data']['type'], Colors.ENDC,
+                Colors.FAIL, response.error['message'], response.error['code'], Colors.ENDC,
                 Colors.HEADER, req, Colors.ENDC
             ))
 
