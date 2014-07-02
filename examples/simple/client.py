@@ -36,11 +36,6 @@ def main():
             "id": 1
         },
         {
-            "method": "time_ping",
-            "jsonrpc": "2.0",
-            "id": 2
-        },
-        {
             "method": "dict_to_list",
             "jsonrpc": "2.0",
             "params": [{1: 3, 'two': 'string', 3: [5, 'list', {'c': 0.3}]}],
