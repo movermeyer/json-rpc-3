@@ -9,19 +9,19 @@ json-rpc-3
     :target: https://coveralls.io/r/Orhideous/json-rpc-3?branch=master
     :alt: Coverage Status
 
-.. image:: https://pypip.in/v/json-rpc-3/badge.png
+.. image:: https://img.shields.io/pypi/v/json-rpc-3.svg
     :target: https://crate.io/packages/json-rpc-3
     :alt: Version
 
-.. image:: https://pypip.in/d/json-rpc-3/badge.png
+.. image:: https://img.shields.io/pypi/dm/json-rpc-3.svg
     :target: https://crate.io/packages/json-rpc-3
     :alt: Downloads
 
-.. image:: https://pypip.in/format/json-rpc-3/badge.png
+.. image:: https://img.shields.io/pypi/format/json-rpc-3.svg
     :target: https://pypi.python.org/pypi/json-rpc-3/
     :alt: Download format
 
-.. image:: https://pypip.in/license/json-rpc-3/badge.png
+.. image:: https://img.shields.io/pypi/l/json-rpc-3.svg
     :target: https://pypi.python.org/pypi/json-rpc-3/
     :alt: License
 
